@@ -28,6 +28,52 @@ app.use('/uploads', express.static(uploadsPath, {
   immutable: true,
 }));
 
+// Ensure DB is connected before handling API routes in serverless
+app.use('/api', async (req, res, next) => {
+  // Allow health check to run without blocking, so user can diagnose DB issues
+  if (req.path === '/health') return next();
+
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database connection failed in API middleware:', err.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Database connection failed. Please check MONGODB_URI in Vercel settings and allow 0.0.0.0/0 in MongoDB Atlas.',
+      error: err.message,
+    });
+  }
+});
+
+// Health check endpoint with database diagnostics
+app.get('/api/health', async (req, res) => {
+  const mongoose = require('mongoose');
+  let dbStatus = 'disconnected';
+  let dbError = null;
+
+  try {
+    await connectDB();
+    dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'connecting';
+  } catch (err) {
+    dbStatus = 'error';
+    dbError = err.message;
+  }
+
+  res.json({
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    service: 'Cracker Shop API',
+    database: {
+      status: dbStatus,
+      host: mongoose.connection.host || 'none',
+      name: mongoose.connection.name || 'none',
+      uriConfigured: Boolean(process.env.MONGODB_URI),
+      error: dbError,
+    },
+  });
+});
+
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
@@ -35,15 +81,6 @@ app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/settings', require('./routes/settingRoutes'));
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'online',
-    timestamp: new Date().toISOString(),
-    service: 'Cracker Shop API',
-  });
-});
 
 // Production: Serve React client build from client/dist
 if (process.env.NODE_ENV === 'production') {
