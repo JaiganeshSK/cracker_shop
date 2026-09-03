@@ -5,7 +5,7 @@
   "scripts": {
     "server": "cd server && npm start",
     "client": "cd client && npm run dev",
-    "build": "cd client && npm run build",
+    "build": "node scripts/build.js",
     "seed": "cd server && npm run seed"
   },
   "keywords": [
