@@ -1,0 +1,14 @@
+{
+  "name": "cracker-shop-platform",
+  "version": "1.0.0",
+  "description": "Festive Cracker E-Commerce Platform & Admin Management Portal",
+  "scripts": {
+    "server": "cd server && npm start",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "seed": "cd server && npm run seed"
+  },
+  "keywords": ["crackers", "fireworks", "sivakasi", "ecommerce", "admin-panel", "react", "nodejs", "mongodb"],
+  "author": "Sri Krishna Fireworks",
+  "license": "ISC"
+}

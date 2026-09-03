@@ -1,0 +1,417 @@
+import React, { useState, useEffect } from 'react';
+import { Search, Printer, Eye, Truck, CheckCircle2, Clock, X, AlertCircle, Phone, MessageSquare } from 'lucide-react';
+import api from '../../services/api';
+
+const AdminOrders = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Selected Order for Modal / Packing Slip
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Tracking edit state
+  const [trackingInput, setTrackingInput] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (activeTab !== 'All') params.append('status', activeTab);
+      if (searchQuery.trim()) params.append('search', searchQuery.trim());
+
+      const res = await api.get(`/orders?${params.toString()}`);
+      if (res.data.success) {
+        setOrders(res.data.orders);
+      }
+    } catch (err) {
+      console.error('Failed to load orders:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [activeTab, searchQuery]);
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const res = await api.patch(`/orders/${orderId}/status`, {
+        orderStatus: newStatus,
+      });
+      if (res.data.success) {
+        setOrders((prev) =>
+          prev.map((o) => (o._id === orderId ? { ...o, orderStatus: newStatus } : o))
+        );
+        if (selectedOrder && selectedOrder._id === orderId) {
+          setSelectedOrder({ ...selectedOrder, orderStatus: newStatus });
+        }
+      }
+    } catch (err) {
+      console.error('Status change error:', err);
+      alert('Failed to update status');
+    }
+  };
+
+  const handleSaveTracking = async () => {
+    if (!selectedOrder) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await api.patch(`/orders/${selectedOrder._id}/status`, {
+        trackingNumber: trackingInput,
+      });
+      if (res.data.success) {
+        setSelectedOrder({ ...selectedOrder, trackingNumber: trackingInput });
+        setOrders((prev) =>
+          prev.map((o) =>
+            o._id === selectedOrder._id ? { ...o, trackingNumber: trackingInput } : o
+          )
+        );
+        alert('Tracking LR number saved successfully');
+      }
+    } catch (err) {
+      console.error('Tracking update error:', err);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleViewOrder = (order) => {
+    setSelectedOrder(order);
+    setTrackingInput(order.trackingNumber || '');
+    setIsModalOpen(true);
+  };
+
+  const handlePrintSlip = () => {
+    window.print();
+  };
+
+  const tabs = ['All', 'Pending', 'Confirmed', 'Packed', 'Dispatched', 'Delivered', 'Cancelled'];
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'Pending':
+        return 'bg-rose-500/10 text-rose-400 border border-rose-500/30';
+      case 'Confirmed':
+        return 'bg-blue-500/10 text-blue-400 border border-blue-500/30';
+      case 'Packed':
+        return 'bg-purple-500/10 text-purple-400 border border-purple-500/30';
+      case 'Dispatched':
+        return 'bg-amber-500/10 text-amber-400 border border-amber-500/30';
+      case 'Delivered':
+        return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+      case 'Cancelled':
+      default:
+        return 'bg-slate-700/40 text-slate-400 border border-slate-700';
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-7xl">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Orders & Consignment Pipeline</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Track incoming customer bookings, print packing slips, and update dispatch tracking.
+          </p>
+        </div>
+      </div>
+
+      {/* Tabs and Search */}
+      <div className="space-y-3">
+        {/* Status Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                activeTab === tab
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                  : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Input */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search by Order ID, name, phone, city..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+          />
+        </div>
+      </div>
+
+      {/* Orders Table */}
+      <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center text-slate-400 text-xs">Loading orders...</div>
+        ) : orders.length === 0 ? (
+          <div className="p-8 text-center text-slate-400 text-xs">No orders in this status tab.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-900/80 text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Order ID</th>
+                  <th className="py-3 px-4">Customer Info</th>
+                  <th className="py-3 px-4">Delivery Location</th>
+                  <th className="py-3 px-4">Items / Varieties</th>
+                  <th className="py-3 px-4 text-right">Payable</th>
+                  <th className="py-3 px-4">Payment</th>
+                  <th className="py-3 px-4">Pipeline Status</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {orders.map((order) => (
+                  <tr key={order._id} className="hover:bg-slate-800/30 transition-colors">
+                    {/* Order ID */}
+                    <td className="py-3 px-4 font-mono font-bold text-amber-400">
+                      {order.orderId}
+                      <div className="text-[10px] text-slate-500 font-sans">
+                        {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </div>
+                    </td>
+
+                    {/* Customer */}
+                    <td className="py-3 px-4">
+                      <div className="font-bold text-white">{order.customer.name}</div>
+                      <div className="text-slate-400 text-[11px]">{order.customer.phone}</div>
+                    </td>
+
+                    {/* Location */}
+                    <td className="py-3 px-4 text-slate-300">
+                      <div>{order.customer.city}</div>
+                      <div className="text-[10px] text-slate-500">
+                        {order.customer.state} - {order.customer.pincode}
+                      </div>
+                    </td>
+
+                    {/* Items */}
+                    <td className="py-3 px-4 text-slate-300">
+                      <span className="font-bold text-white">{order.items.length}</span> Varieties
+                    </td>
+
+                    {/* Net Payable */}
+                    <td className="py-3 px-4 text-right font-black text-amber-400 text-sm">
+                      ₹{order.totalAmount.toLocaleString()}
+                    </td>
+
+                    {/* Payment Method */}
+                    <td className="py-3 px-4 text-slate-400 text-[11px]">
+                      {order.paymentMethod}
+                    </td>
+
+                    {/* Status Dropdown */}
+                    <td className="py-3 px-4">
+                      <select
+                        value={order.orderStatus}
+                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-900 border focus:outline-none ${getStatusBadge(
+                          order.orderStatus
+                        )}`}
+                      >
+                        {tabs
+                          .filter((t) => t !== 'All')
+                          .map((st) => (
+                            <option key={st} value={st} className="bg-slate-900 text-white">
+                              {st}
+                            </option>
+                          ))}
+                      </select>
+                    </td>
+
+                    {/* Action Button */}
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => handleViewOrder(order)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 ml-auto transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Inspect</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* DETAILED ORDER / PACKING SLIP MODAL */}
+      {isModalOpen && selectedOrder && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
+            {/* Modal Top Bar */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4 no-print">
+              <div>
+                <h3 className="text-xl font-black text-white flex items-center gap-2">
+                  <span>Order Inspection</span>
+                  <span className="text-amber-400 font-mono text-sm">{selectedOrder.orderId}</span>
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Booked on {new Date(selectedOrder.createdAt).toLocaleString('en-IN')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrintSlip}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Packing Slip</span>
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Print Header (Print mode only) */}
+            <div className="hidden print-only text-center border-b pb-4">
+              <h2 className="text-2xl font-black">Sri Krishna Fireworks Sivakasi</h2>
+              <p className="text-xs">Packing Slip & Consignment Dispatch Manifest</p>
+              <p className="text-xs font-mono font-bold mt-1">Order ID: {selectedOrder.orderId}</p>
+            </div>
+
+            {/* Customer & Delivery Card */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <div>
+                <div className="text-slate-400 font-bold uppercase tracking-wider text-[10px] mb-1">
+                  Customer Information
+                </div>
+                <div className="font-bold text-white text-sm">{selectedOrder.customer.name}</div>
+                <div className="text-slate-300 mt-1">Phone: {selectedOrder.customer.phone}</div>
+                {selectedOrder.customer.whatsapp && (
+                  <div className="text-slate-300">WhatsApp: {selectedOrder.customer.whatsapp}</div>
+                )}
+                {selectedOrder.customer.email && (
+                  <div className="text-slate-400">Email: {selectedOrder.customer.email}</div>
+                )}
+              </div>
+
+              <div>
+                <div className="text-slate-400 font-bold uppercase tracking-wider text-[10px] mb-1">
+                  Shipping Consignment Destination
+                </div>
+                <div className="text-slate-200 leading-relaxed">
+                  {selectedOrder.customer.address}
+                  {selectedOrder.customer.landmark ? `, Near ${selectedOrder.customer.landmark}` : ''}
+                </div>
+                <div className="text-amber-400 font-bold mt-1">
+                  {selectedOrder.customer.city}, {selectedOrder.customer.state} - {selectedOrder.customer.pincode}
+                </div>
+                {selectedOrder.customer.preferredDeliveryDate && (
+                  <div className="text-emerald-400 text-[11px] mt-1">
+                    Preferred Delivery: {selectedOrder.customer.preferredDeliveryDate}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Itemized Packing Checklist */}
+            <div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Order Items & Quantity Checklist
+              </div>
+              <div className="border border-slate-800 rounded-xl overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-950 text-slate-400 text-[11px] border-b border-slate-800">
+                    <tr>
+                      <th className="py-2 px-3 w-8 text-center">✓</th>
+                      <th className="py-2 px-3">Item Name</th>
+                      <th className="py-2 px-3 w-28">Pack</th>
+                      <th className="py-2 px-3 w-16 text-center">Qty</th>
+                      <th className="py-2 px-3 w-20 text-right">Price</th>
+                      <th className="py-2 px-3 w-24 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {selectedOrder.items.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-slate-800/20">
+                        <td className="py-2 px-3 text-center border-r border-slate-800">
+                          <input type="checkbox" className="accent-amber-500 rounded" />
+                        </td>
+                        <td className="py-2 px-3 font-bold text-white">{item.name}</td>
+                        <td className="py-2 px-3 text-slate-400">{item.piecePerBox}</td>
+                        <td className="py-2 px-3 text-center font-black text-amber-400">
+                          {item.quantity}
+                        </td>
+                        <td className="py-2 px-3 text-right text-slate-400">₹{item.price}</td>
+                        <td className="py-2 px-3 text-right font-bold text-white">
+                          ₹{item.total.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Bill Summary */}
+            <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-800">
+              <div className="text-slate-400">
+                Payment Method: <span className="text-white font-bold">{selectedOrder.paymentMethod}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-slate-400 mr-2">Grand Total:</span>
+                <span className="text-amber-400 font-black text-lg">
+                  ₹{selectedOrder.totalAmount.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* LR Tracking Docket Number Updater */}
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 no-print">
+              <label className="block text-slate-300 font-bold text-xs">
+                Transport LR / Docket Tracking Number
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. VRL-TRN-948212 or ABT-4819"
+                  value={trackingInput}
+                  onChange={(e) => setTrackingInput(e.target.value)}
+                  className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+                />
+                <button
+                  type="button"
+                  disabled={updatingStatus}
+                  onClick={handleSaveTracking}
+                  className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400"
+                >
+                  Save Tracking
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Customers can view this LR number on the public "Track Order" page to claim their transport parcel.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AdminOrders;
