@@ -42,6 +42,11 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: '/uploads/products/placeholder.webp',
     },
+    imageFileName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     soundLevel: {
       type: String,
       enum: ['Silent / Visual', 'Mild Sound', 'Loud Sound', 'Musical / Whistling'],

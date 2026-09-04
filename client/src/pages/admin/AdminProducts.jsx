@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, UploadCloud, CheckCircle, X, Volume2, Sparkles, Image as ImageIcon } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Search,
+  UploadCloud,
+  CheckCircle,
+  X,
+  Volume2,
+  Sparkles,
+  Image as ImageIcon,
+  Layers,
+  Copy,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 import api from '../../services/api';
 
 const AdminProducts = () => {
@@ -24,6 +39,7 @@ const AdminProducts = () => {
     discountPercentage: '',
     piecePerBox: '10 Pcs / Box',
     imageUrl: '',
+    imageFileName: '',
     soundLevel: 'Mild Sound',
     inStock: true,
     featured: false,
@@ -33,6 +49,13 @@ const AdminProducts = () => {
   // Image Upload State
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFeedback, setImageFeedback] = useState('');
+
+  // Multiple / Bulk Product Insert State
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [bulkProducts, setBulkProducts] = useState([]);
+  const [isSubmittingBulk, setIsSubmittingBulk] = useState(false);
+  const [bulkFeedback, setBulkFeedback] = useState({ type: '', message: '', errors: [] });
+  const [uploadingRowIndex, setUploadingRowIndex] = useState(null);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -84,6 +107,7 @@ const AdminProducts = () => {
       discountPercentage: p.discountPercentage,
       piecePerBox: p.piecePerBox || '1 Box',
       imageUrl: p.imageUrl || '',
+      imageFileName: p.imageFileName || '',
       soundLevel: p.soundLevel || 'Mild Sound',
       inStock: p.inStock,
       featured: p.featured || false,
@@ -94,7 +118,7 @@ const AdminProducts = () => {
     setIsModalOpen(true);
   };
 
-  // Handle Image Upload & Sharp WebP conversion
+  // Handle Image Upload to Vercel Blob & Sharp WebP conversion
   const handleImageFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -110,12 +134,16 @@ const AdminProducts = () => {
       });
 
       if (res.data.success) {
-        setFormData((prev) => ({ ...prev, imageUrl: res.data.imageUrl }));
-        setImageFeedback(`✅ Converted to WebP format (${res.data.imageUrl})`);
+        setFormData((prev) => ({
+          ...prev,
+          imageUrl: res.data.imageUrl,
+          imageFileName: res.data.filename || '',
+        }));
+        setImageFeedback(`✅ Uploaded to Vercel Blob: ${res.data.filename}`);
       }
     } catch (err) {
       console.error('Image upload failed:', err);
-      setImageFeedback('❌ Failed to upload & convert image. Please check file type.');
+      setImageFeedback('❌ Failed to upload image. Please check file type.');
     } finally {
       setUploadingImage(false);
     }
@@ -217,6 +245,184 @@ const AdminProducts = () => {
   const categoryList =
     categories.length > 0 ? categories.map((c) => c.name) : defaultCategories;
 
+  // --- MULTIPLE PRODUCT INSERT HANDLERS ---
+  const createEmptyProductRow = (cat) => {
+    const defaultCat = cat || (categoryList.length > 0 ? categoryList[0] : 'Sparklers');
+    return {
+      tempId: Date.now() + '-' + Math.random().toString(36).substring(2, 9),
+      name: '',
+      category: defaultCat,
+      description: '',
+      mrp: '',
+      price: '',
+      discountPercentage: 0,
+      piecePerBox: '10 Pcs / Box',
+      imageUrl: '',
+      imageFileName: '',
+      soundLevel: 'Mild Sound',
+      inStock: true,
+      featured: false,
+    };
+  };
+
+  const handleOpenBulkAdd = () => {
+    const initialCat = selectedCat !== 'All' ? selectedCat : (categoryList[0] || 'Sparklers');
+    setBulkProducts([
+      createEmptyProductRow(initialCat),
+      createEmptyProductRow(initialCat),
+    ]);
+    setBulkFeedback({ type: '', message: '', errors: [] });
+    setUploadingRowIndex(null);
+    setIsBulkModalOpen(true);
+  };
+
+  const handleAddBulkRow = () => {
+    const prevCat = bulkProducts.length > 0 ? bulkProducts[bulkProducts.length - 1].category : categoryList[0];
+    setBulkProducts((prev) => [...prev, createEmptyProductRow(prevCat)]);
+  };
+
+  const handleRemoveBulkRow = (index) => {
+    if (bulkProducts.length <= 1) {
+      setBulkProducts([createEmptyProductRow()]);
+      return;
+    }
+    setBulkProducts((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleDuplicateBulkRow = (index) => {
+    const rowToClone = bulkProducts[index];
+    const cloned = {
+      ...rowToClone,
+      tempId: Date.now() + '-' + Math.random().toString(36).substring(2, 9),
+      name: rowToClone.name ? `${rowToClone.name} (Copy)` : '',
+    };
+    setBulkProducts((prev) => {
+      const next = [...prev];
+      next.splice(index + 1, 0, cloned);
+      return next;
+    });
+  };
+
+  const handleBulkRowChange = (index, field, value) => {
+    setBulkProducts((prev) =>
+      prev.map((row, idx) => {
+        if (idx !== index) return row;
+        const updated = { ...row, [field]: value };
+
+        if (field === 'mrp' || field === 'price') {
+          const mrp = field === 'mrp' ? parseFloat(value) || 0 : parseFloat(row.mrp) || 0;
+          const price = field === 'price' ? parseFloat(value) || 0 : parseFloat(row.price) || 0;
+          updated.discountPercentage = mrp > 0 && price >= 0 ? Math.round(((mrp - price) / mrp) * 100) : 0;
+        }
+
+        return updated;
+      })
+    );
+  };
+
+  const handleBulkRowImageUpload = async (index, file) => {
+    if (!file) return;
+
+    const data = new FormData();
+    data.append('image', file);
+
+    setUploadingRowIndex(index);
+    try {
+      const res = await api.post('/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (res.data.success) {
+        setBulkProducts((prev) =>
+          prev.map((row, idx) =>
+            idx === index
+              ? {
+                  ...row,
+                  imageUrl: res.data.imageUrl,
+                  imageFileName: res.data.filename || '',
+                }
+              : row
+          )
+        );
+      }
+    } catch (err) {
+      console.error(`Row ${index + 1} image upload failed:`, err);
+      alert(`Image upload failed for item #${index + 1}. Please check file type.`);
+    } finally {
+      setUploadingRowIndex(null);
+    }
+  };
+
+  const handleApplyCategoryToAll = (cat) => {
+    if (!cat) return;
+    setBulkProducts((prev) => prev.map((row) => ({ ...row, category: cat })));
+  };
+
+  const handleSubmitBulk = async (e) => {
+    e.preventDefault();
+    setBulkFeedback({ type: '', message: '', errors: [] });
+
+    // Client-side validation
+    const validationErrors = [];
+    bulkProducts.forEach((p, idx) => {
+      const rowNum = idx + 1;
+      if (!p.name?.trim()) validationErrors.push(`Product #${rowNum}: Name is required`);
+      if (!p.category?.trim()) validationErrors.push(`Product #${rowNum}: Category is required`);
+      if (p.mrp === '' || isNaN(parseFloat(p.mrp)) || parseFloat(p.mrp) <= 0) {
+        validationErrors.push(`Product #${rowNum}: Valid MRP is required`);
+      }
+      if (p.price === '' || isNaN(parseFloat(p.price)) || parseFloat(p.price) < 0) {
+        validationErrors.push(`Product #${rowNum}: Valid Selling Price is required`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setBulkFeedback({
+        type: 'error',
+        message: `Please resolve ${validationErrors.length} required field(s):`,
+        errors: validationErrors,
+      });
+      return;
+    }
+
+    setIsSubmittingBulk(true);
+    try {
+      const payload = bulkProducts.map((p) => ({
+        name: p.name.trim(),
+        category: p.category.trim(),
+        description: p.description?.trim() || '',
+        mrp: parseFloat(p.mrp),
+        price: parseFloat(p.price),
+        discountPercentage: p.discountPercentage || 0,
+        piecePerBox: p.piecePerBox?.trim() || '1 Box',
+        imageUrl: p.imageUrl || '',
+        imageFileName: p.imageFileName || '',
+        soundLevel: p.soundLevel || 'Mild Sound',
+        inStock: p.inStock,
+        featured: p.featured,
+      }));
+
+      const res = await api.post('/products/bulk', payload);
+
+      if (res.data.success) {
+        setIsBulkModalOpen(false);
+        fetchProducts();
+        alert(`🎉 Successfully added ${res.data.count || payload.length} products to inventory!`);
+      }
+    } catch (err) {
+      console.error('Bulk submission error:', err);
+      const msg = err.response?.data?.message || 'Failed to submit multiple products.';
+      const serverErrors = err.response?.data?.errors || [];
+      setBulkFeedback({
+        type: 'error',
+        message: msg,
+        errors: serverErrors,
+      });
+    } finally {
+      setIsSubmittingBulk(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Top Bar */}
@@ -228,13 +434,25 @@ const AdminProducts = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 flex items-center gap-2 transition-all self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Cracker</span>
-        </button>
+        <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
+          <button
+            type="button"
+            onClick={handleOpenBulkAdd}
+            className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 hover:border-amber-500/60 shadow-lg shadow-black/20 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <Layers className="w-4 h-4 text-amber-400" />
+            <span>Add Multiple Products</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Cracker</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter and Search */}
@@ -605,6 +823,381 @@ const AdminProducts = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MULTIPLE PRODUCT INSERT MODAL (Bulk Provision with Add & Remove Rows + Vercel Blob Upload) */}
+      {isBulkModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+          <div className="relative w-full max-w-5xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900/90 sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg sm:text-xl font-black text-white">Add Multiple Products</h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      {bulkProducts.length} {bulkProducts.length === 1 ? 'Product' : 'Products'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Add or remove rows dynamically. Each item uploads directly to Vercel Blob with automated WebP conversion.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddBulkRow}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Add Row</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsBulkModalOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Subheader Quick Actions Bar */}
+            <div className="px-5 py-2.5 bg-slate-950/60 border-b border-slate-800/80 flex items-center justify-between gap-4 flex-wrap text-xs">
+              <div className="flex items-center gap-2 text-slate-400">
+                <span>Quick Apply Category to All:</span>
+                <select
+                  onChange={(e) => handleApplyCategoryToAll(e.target.value)}
+                  defaultValue=""
+                  className="px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500"
+                >
+                  <option value="" disabled>Select Category</option>
+                  {categoryList.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>Photos automatically upload to Vercel Blob with date-time naming</span>
+              </div>
+            </div>
+
+            {/* Error Feedback Banner */}
+            {bulkFeedback.type === 'error' && (
+              <div className="mx-5 mt-4 p-3.5 bg-rose-950/40 border border-rose-800/60 rounded-xl text-rose-300 text-xs space-y-1">
+                <div className="flex items-center gap-2 font-bold text-rose-200">
+                  <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                  <span>{bulkFeedback.message}</span>
+                </div>
+                {bulkFeedback.errors && bulkFeedback.errors.length > 0 && (
+                  <ul className="list-disc list-inside space-y-0.5 text-[11px] text-rose-300/90 pl-1">
+                    {bulkFeedback.errors.slice(0, 5).map((err, i) => (
+                      <li key={i}>{err}</li>
+                    ))}
+                    {bulkFeedback.errors.length > 5 && (
+                      <li>...and {bulkFeedback.errors.length - 5} more issues</li>
+                    )}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {/* Scrollable Dynamic Rows List */}
+            <form onSubmit={handleSubmitBulk} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+              {bulkProducts.map((row, index) => {
+                const isUploadingThisRow = uploadingRowIndex === index;
+
+                return (
+                  <div
+                    key={row.tempId || index}
+                    className="bg-slate-950/60 hover:bg-slate-950/80 border border-slate-800/90 hover:border-slate-700 rounded-2xl p-4 sm:p-5 transition-all space-y-4 relative group shadow-sm"
+                  >
+                    {/* Row Header: Number, Stock Toggle, Duplicate & Remove */}
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-black text-xs">
+                          #{index + 1}
+                        </span>
+                        <span className="text-xs font-bold text-slate-300">
+                          {row.name ? row.name : `Product #${index + 1}`}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {/* In-Stock Toggle */}
+                        <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-400 hover:text-slate-200">
+                          <input
+                            type="checkbox"
+                            checked={row.inStock}
+                            onChange={(e) => handleBulkRowChange(index, 'inStock', e.target.checked)}
+                            className="w-3.5 h-3.5 accent-emerald-500 rounded cursor-pointer"
+                          />
+                          <span>In Stock</span>
+                        </label>
+
+                        {/* Featured Toggle */}
+                        <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-400 hover:text-slate-200">
+                          <input
+                            type="checkbox"
+                            checked={row.featured}
+                            onChange={(e) => handleBulkRowChange(index, 'featured', e.target.checked)}
+                            className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
+                          />
+                          <span>Featured</span>
+                        </label>
+
+                        {/* Duplicate Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleDuplicateBulkRow(index)}
+                          title="Duplicate this row"
+                          className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 flex items-center gap-1 transition-colors"
+                        >
+                          <Copy className="w-3 h-3 text-slate-400" />
+                          <span className="hidden sm:inline">Duplicate</span>
+                        </button>
+
+                        {/* Remove Row Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBulkRow(index)}
+                          title="Remove this product"
+                          className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 flex items-center gap-1 transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3 text-rose-400" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Row Content: Image Uploader + Details Form */}
+                    <div className="flex flex-col sm:flex-row gap-4 items-start">
+                      
+                      {/* Vercel Blob Image Box */}
+                      <div className="flex flex-col items-center gap-1.5 self-center sm:self-start">
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl border border-slate-800 bg-slate-900 relative overflow-hidden flex items-center justify-center group/img">
+                          {row.imageUrl ? (
+                            <>
+                              <img
+                                src={row.imageUrl}
+                                alt="Cracker"
+                                className="w-full h-full object-cover rounded-xl"
+                              />
+                              <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                <label className="cursor-pointer text-[10px] text-amber-300 font-bold px-2 py-1 bg-slate-900/90 rounded-md border border-amber-500/30 shadow">
+                                  Change
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={isUploadingThisRow}
+                                    onChange={(e) => handleBulkRowImageUpload(index, e.target.files[0])}
+                                    className="hidden"
+                                  />
+                                </label>
+                              </div>
+                              <div className="absolute top-1 right-1 bg-emerald-500 text-slate-950 rounded-full p-0.5">
+                                <CheckCircle className="w-3 h-3" />
+                              </div>
+                            </>
+                          ) : (
+                            <label className="w-full h-full flex flex-col items-center justify-center p-2 cursor-pointer text-slate-500 hover:text-amber-400 transition-colors text-center">
+                              {isUploadingThisRow ? (
+                                <div className="flex flex-col items-center gap-1">
+                                  <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+                                  <span className="text-[10px] text-slate-400 font-mono">Uploading...</span>
+                                </div>
+                              ) : (
+                                <>
+                                  <UploadCloud className="w-5 h-5 mb-1" />
+                                  <span className="text-[10px] font-semibold leading-tight">Upload Photo</span>
+                                  <span className="text-[9px] text-slate-600">Vercel Blob</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={isUploadingThisRow}
+                                    onChange={(e) => handleBulkRowImageUpload(index, e.target.files[0])}
+                                    className="hidden"
+                                  />
+                                </>
+                              )}
+                            </label>
+                          )}
+                        </div>
+                        {row.imageFileName && (
+                          <span className="text-[9px] text-slate-500 font-mono truncate max-w-[110px]" title={row.imageFileName}>
+                            {row.imageFileName}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Input Fields Grid */}
+                      <div className="flex-1 w-full space-y-3">
+                        {/* Line 1: Name & Category */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                          <div className="sm:col-span-7">
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                              Cracker Name <span className="text-amber-400">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g., 10cm Electric Sparklers"
+                              value={row.name}
+                              onChange={(e) => handleBulkRowChange(index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-5">
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                              Category <span className="text-amber-400">*</span>
+                            </label>
+                            <select
+                              required
+                              value={row.category}
+                              onChange={(e) => handleBulkRowChange(index, 'category', e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                            >
+                              {categoryList.map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Line 2: Pricing & Packing */}
+                        <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 items-end">
+                          <div className="sm:col-span-3">
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                              MRP (₹) <span className="text-amber-400">*</span>
+                            </label>
+                            <input
+                              type="number"
+                              required
+                              min="0"
+                              placeholder="100"
+                              value={row.mrp}
+                              onChange={(e) => handleBulkRowChange(index, 'mrp', e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                              Offer Price (₹) <span className="text-amber-400">*</span>
+                            </label>
+                            <input
+                              type="number"
+                              required
+                              min="0"
+                              placeholder="30"
+                              value={row.price}
+                              onChange={(e) => handleBulkRowChange(index, 'price', e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+
+                          {/* Discount % Auto Badge */}
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Discount</label>
+                            <div className={`px-2.5 py-2 rounded-xl text-xs font-black text-center border ${
+                              row.discountPercentage > 0
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                                : 'bg-slate-900 border-slate-800 text-slate-500'
+                            }`}>
+                              {row.discountPercentage > 0 ? `${row.discountPercentage}% OFF` : '0%'}
+                            </div>
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Packing</label>
+                            <input
+                              type="text"
+                              placeholder="1 Box"
+                              value={row.piecePerBox}
+                              onChange={(e) => handleBulkRowChange(index, 'piecePerBox', e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Sound</label>
+                            <select
+                              value={row.soundLevel}
+                              onChange={(e) => handleBulkRowChange(index, 'soundLevel', e.target.value)}
+                              className="w-full px-2 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 truncate"
+                            >
+                              <option value="Mild Sound">Mild</option>
+                              <option value="Loud Sound">Loud</option>
+                              <option value="Silent / Visual">Silent</option>
+                              <option value="Musical / Whistling">Musical</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Big Prominent + Add Another Product Button */}
+              <button
+                type="button"
+                onClick={handleAddBulkRow}
+                className="w-full py-4 border-2 border-dashed border-slate-800 hover:border-amber-500/60 rounded-2xl bg-slate-950/40 hover:bg-slate-900/60 text-slate-400 hover:text-amber-400 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all group cursor-pointer"
+              >
+                <div className="w-6 h-6 rounded-full bg-amber-500/10 group-hover:bg-amber-500 text-amber-400 group-hover:text-slate-950 flex items-center justify-center transition-colors">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <span>+ Add Another Product</span>
+              </button>
+
+              {/* Sticky Modal Footer */}
+              <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-4 flex-wrap sticky bottom-0 bg-slate-900/95 pb-1">
+                <div className="text-xs text-slate-400">
+                  Total <strong className="text-white font-bold">{bulkProducts.length}</strong> cracker {bulkProducts.length === 1 ? 'item' : 'items'} ready to insert
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsBulkModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingBulk || bulkProducts.length === 0}
+                    className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    {isSubmittingBulk ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Saving {bulkProducts.length} Products...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Layers className="w-4 h-4" />
+                        <span>Save All {bulkProducts.length} Products</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+
           </div>
         </div>
       )}

@@ -99,11 +99,125 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+/**
+ * Helper to validate and normalize a batch of products for bulk insertion
+ */
+const prepareProductsForBulkInsert = (items) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    const err = new Error('Please provide a non-empty array of products');
+    err.status = 400;
+    throw err;
+  }
+
+  if (items.length > 200) {
+    const err = new Error('Maximum 200 products can be inserted in a single batch');
+    err.status = 400;
+    throw err;
+  }
+
+  const validated = [];
+  const errors = [];
+
+  items.forEach((item, index) => {
+    const rowNum = index + 1;
+    const name = item && item.name ? String(item.name).trim() : '';
+    const category = item && item.category ? String(item.category).trim() : '';
+    const mrp = item ? Number(item.mrp) : NaN;
+    const price = item ? Number(item.price) : NaN;
+
+    if (!name) {
+      errors.push(`Product #${rowNum}: Name is required`);
+    }
+    if (!category) {
+      errors.push(`Product #${rowNum}: Category is required`);
+    }
+    if (isNaN(mrp) || mrp < 0) {
+      errors.push(`Product #${rowNum}: Valid MRP is required`);
+    }
+    if (isNaN(price) || price < 0) {
+      errors.push(`Product #${rowNum}: Valid Selling Price is required`);
+    }
+
+    if (errors.length === 0) {
+      const discountPercentage =
+        mrp > 0 ? Math.round(((mrp - price) / mrp) * 100) : 0;
+
+      validated.push({
+        name,
+        category,
+        description: item.description ? String(item.description).trim() : '',
+        mrp,
+        price,
+        discountPercentage:
+          item.discountPercentage !== undefined && !isNaN(Number(item.discountPercentage))
+            ? Number(item.discountPercentage)
+            : discountPercentage,
+        piecePerBox: item.piecePerBox ? String(item.piecePerBox).trim() : '1 Box',
+        imageUrl: item.imageUrl ? String(item.imageUrl).trim() : '/uploads/products/placeholder.webp',
+        imageFileName: item.imageFileName ? String(item.imageFileName).trim() : '',
+        soundLevel: item.soundLevel || 'Mild Sound',
+        inStock: item.inStock !== undefined ? Boolean(item.inStock) : true,
+        featured: item.featured !== undefined ? Boolean(item.featured) : false,
+        sortOrder: item.sortOrder !== undefined && !isNaN(Number(item.sortOrder)) ? Number(item.sortOrder) : 0,
+      });
+    }
+  });
+
+  if (errors.length > 0) {
+    const err = new Error(errors.slice(0, 5).join('; ') + (errors.length > 5 ? ` and ${errors.length - 5} more errors` : ''));
+    err.details = errors;
+    err.status = 400;
+    throw err;
+  }
+
+  return validated;
+};
+
+// @route   POST /api/products/bulk
+// @desc    Create multiple products at once
+// @access  Private (Admin)
+router.post('/bulk', protect, async (req, res) => {
+  try {
+    const rawProducts = Array.isArray(req.body) ? req.body : req.body && req.body.products;
+    const validatedProducts = prepareProductsForBulkInsert(rawProducts);
+
+    const insertedProducts = await Product.insertMany(validatedProducts, { ordered: true });
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully inserted ${insertedProducts.length} products`,
+      count: insertedProducts.length,
+      products: insertedProducts,
+    });
+  } catch (error) {
+    console.error('Bulk product insert error:', error);
+    res.status(error.status || 500).json({
+      success: false,
+      message: error.message || 'Error inserting products in bulk',
+      errors: error.details || undefined,
+    });
+  }
+});
+
 // @route   POST /api/products
-// @desc    Create new product
+// @desc    Create new product (or batch if array provided)
 // @access  Private (Admin)
 router.post('/', protect, async (req, res) => {
   try {
+    // If request body is array or contains products array, delegate to bulk handler
+    if (Array.isArray(req.body) || (req.body && Array.isArray(req.body.products))) {
+      const rawProducts = Array.isArray(req.body) ? req.body : req.body.products;
+      const validatedProducts = prepareProductsForBulkInsert(rawProducts);
+      const insertedProducts = await Product.insertMany(validatedProducts, { ordered: true });
+
+      return res.status(201).json({
+        success: true,
+        message: `Successfully inserted ${insertedProducts.length} products`,
+        count: insertedProducts.length,
+        products: insertedProducts,
+      });
+    }
+
     const {
       name,
       category,
@@ -112,6 +226,7 @@ router.post('/', protect, async (req, res) => {
       price,
       piecePerBox,
       imageUrl,
+      imageFileName,
       soundLevel,
       inStock,
       featured,
@@ -136,6 +251,7 @@ router.post('/', protect, async (req, res) => {
       discountPercentage,
       piecePerBox: piecePerBox || '1 Box',
       imageUrl: imageUrl || '/uploads/products/placeholder.webp',
+      imageFileName: imageFileName || '',
       soundLevel: soundLevel || 'Mild Sound',
       inStock: inStock !== undefined ? inStock : true,
       featured: featured || false,
@@ -146,7 +262,11 @@ router.post('/', protect, async (req, res) => {
     res.status(201).json({ success: true, product: savedProduct });
   } catch (error) {
     console.error('Create product error:', error);
-    res.status(500).json({ success: false, message: error.message || 'Error creating product' });
+    res.status(error.status || 500).json({
+      success: false,
+      message: error.message || 'Error creating product',
+      errors: error.details || undefined,
+    });
   }
 });
 
@@ -168,6 +288,7 @@ router.put('/:id', protect, async (req, res) => {
       price,
       piecePerBox,
       imageUrl,
+      imageFileName,
       soundLevel,
       inStock,
       featured,
@@ -178,6 +299,9 @@ router.put('/:id', protect, async (req, res) => {
     if (imageUrl && imageUrl !== product.imageUrl) {
       deleteImageFile(product.imageUrl);
       product.imageUrl = imageUrl;
+    }
+    if (imageFileName !== undefined) {
+      product.imageFileName = imageFileName;
     }
 
     if (name) product.name = name;
