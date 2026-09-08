@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, ShoppingBag, Search, Menu, X, ShieldAlert, PhoneCall, Zap } from 'lucide-react';
+import { Flame, ShoppingBag, Menu, X, ShieldAlert, PhoneCall, ListOrdered, LayoutGrid } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Navbar = ({ onOpenSafetyModal }) => {
@@ -8,188 +8,200 @@ const Navbar = ({ onOpenSafetyModal }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  const isActive = (path) => location.pathname === path;
+  const navLinks = [
+    { to: '/',          label: 'Quick Order', icon: ListOrdered, match: ['/', '/quick-order'] },
+    { to: '/products',  label: 'Catalog',     icon: LayoutGrid,  match: ['/products', '/catalog'] },
+    { to: '/track-order', label: 'Track Order', icon: null,      match: ['/track-order'] },
+  ];
+
+  const isLinkActive = (paths) => paths.includes(location.pathname);
 
   return (
-    <header className="sticky top-0 z-40 w-full">
-      {/* Top Announcement Marquee */}
+    <header className="sticky top-0 z-40 w-full bg-[#080c14] border-b border-white/[0.08] shadow-lg">
+      {/* Announcement Bar - Solid, rich, non-transparent banner */}
       {storeSettings.isAnnouncementActive && (
-        <div className="bg-gradient-to-r from-amber-600 via-rose-600 to-amber-600 text-white text-xs sm:text-sm py-1.5 px-4 text-center font-medium shadow-sm flex items-center justify-center gap-2 overflow-hidden">
-          <span className="inline-block animate-pulse">🔥</span>
-          <span className="truncate">{storeSettings.announcementText}</span>
-          <span className="hidden sm:inline-block font-semibold bg-white/20 px-2 py-0.5 rounded text-[11px]">
-            Min Order: ₹{storeSettings.minOrderValue}
-          </span>
+        <div className="bg-[#d4a017] text-[#080c14] text-xs py-2 overflow-hidden flex font-bold shadow-inner">
+          <div className="animate-marquee whitespace-nowrap flex items-center gap-12 pr-12">
+            <span className="flex items-center gap-2 tracking-wide font-extrabold">
+              <Flame className="w-3.5 h-3.5 inline-block fill-current" />
+              {storeSettings.announcementText}
+              <span className="bg-[#080c14] text-[#d4a017] px-2 py-0.5 rounded font-black text-[11px] shadow-sm">
+                Min ₹{storeSettings.minOrderValue}
+              </span>
+            </span>
+            <span className="flex items-center gap-2 tracking-wide font-extrabold">
+              <Flame className="w-3.5 h-3.5 inline-block fill-current" />
+              {storeSettings.announcementText}
+              <span className="bg-[#080c14] text-[#d4a017] px-2 py-0.5 rounded font-black text-[11px] shadow-sm">
+                Min ₹{storeSettings.minOrderValue}
+              </span>
+            </span>
+          </div>
         </div>
       )}
 
-      {/* Main Navigation Bar */}
-      <div className="glass-nav">
+      {/* Main Navigation */}
+      <div className="glass-nav bg-[#080c14]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-4">
+
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-amber-400 p-0.5 shadow-lg group-hover:scale-105 transition-transform duration-300">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 animate-spin" style={{ animationDuration: '8s' }} />
+            <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
+              {storeSettings.logoUrl ? (
+                <div className="h-9 sm:h-10 max-w-[130px] flex items-center flex-shrink-0">
+                  <img
+                    src={storeSettings.logoUrl}
+                    alt={storeSettings.shopName || 'Store Logo'}
+                    className="max-h-full max-w-full object-contain rounded"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
                 </div>
-              </div>
-              <div>
-                <div className="font-extrabold text-base sm:text-xl tracking-tight text-white flex items-center gap-1.5">
-                  <span>Sri Krishna</span>
-                  <span className="text-amber-400">Fireworks</span>
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-gold-400 flex items-center justify-center flex-shrink-0 group-hover:bg-gold-300 transition-colors">
+                  <Flame className="w-4 h-4 text-surface-base" />
                 </div>
-                <div className="text-[10px] sm:text-xs text-amber-300/80 font-medium tracking-wider uppercase">
-                  Sivakasi Direct Factory
+              )}
+              <div className="min-w-0">
+                <div className="font-bold text-sm sm:text-[15px] tracking-tight text-white leading-tight">
+                  {storeSettings.shopName || 'Sri Krishna Fireworks'}
+                </div>
+                <div className="text-[10px] text-gold-400/80 font-medium tracking-widest uppercase leading-tight">
+                  Sivakasi Direct
                 </div>
               </div>
             </Link>
 
-            {/* Desktop Navigation Links - Quick Order as Default */}
-            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-              <Link
-                to="/"
-                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
-                  isActive('/') || isActive('/quick-order')
-                    ? 'text-white bg-gradient-to-r from-amber-500 to-rose-600 shadow-md shadow-amber-500/20'
-                    : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/30'
-                }`}
-              >
-                <Zap className="w-4 h-4 fill-current" />
-                <span>Quick Order Sheet</span>
-              </Link>
-              <Link
-                to="/products"
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive('/products') || isActive('/catalog') ? 'text-amber-400 bg-amber-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                Visual Catalog
-              </Link>
-              <Link
-                to="/showcase"
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive('/showcase') ? 'text-amber-400 bg-amber-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                Festive Showcase
-              </Link>
-              <Link
-                to="/track-order"
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive('/track-order') ? 'text-amber-400 bg-amber-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                Track Order
-              </Link>
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-0.5">
+              {navLinks.map((link) => {
+                const active = isLinkActive(link.match);
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2 ${
+                      active
+                        ? 'text-gold-400 bg-gold-400/10'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {Icon && <Icon className="w-4 h-4" />}
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
               {onOpenSafetyModal && (
                 <button
                   onClick={onOpenSafetyModal}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-400/80 hover:text-emerald-300 hover:bg-white/5 transition-colors flex items-center gap-2"
                 >
                   <ShieldAlert className="w-4 h-4" />
-                  <span>Safety Tips</span>
+                  <span>Safety</span>
                 </button>
               )}
             </nav>
 
-            {/* Right Actions: Cart & Contact */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* WhatsApp Quick Link */}
+            {/* Right Actions */}
+            <div className="flex items-center gap-2">
+              {/* WhatsApp — desktop only */}
               <a
-                href={`https://wa.me/${storeSettings.whatsapp}?text=Hello%20Sri%20Krishna%20Fireworks,%20I%20have%20an%20inquiry%20about%20crackers`}
+                href={`https://wa.me/${storeSettings.whatsapp}?text=Hello%20Sri%20Krishna%20Fireworks,%20I%20want%20to%20place%20an%20order`}
                 target="_blank"
                 rel="noreferrer"
-                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+                className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 transition-colors"
               >
                 <PhoneCall className="w-3.5 h-3.5" />
-                <span>WhatsApp Enquiry</span>
+                <span>WhatsApp</span>
               </a>
 
-              {/* Cart Drawer Trigger */}
+              {/* Cart Button */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-200 active:scale-95"
+                className="relative flex items-center gap-2 bg-gold-400 hover:bg-gold-300 text-surface-base font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg shadow-lg shadow-gold-400/20 transition-all duration-150 active:scale-95"
                 aria-label="View shopping cart"
               >
-                <ShoppingBag className="w-5 h-5 text-slate-950" />
+                <ShoppingBag className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
                 <span className="hidden sm:inline text-sm">Cart</span>
                 {totalItems > 0 && (
-                  <span className="flex items-center justify-center bg-rose-600 text-white text-xs font-black min-w-[20px] h-5 px-1 rounded-full border border-slate-950 animate-bounce">
-                    {totalItems}
+                  <span className="relative flex items-center justify-center bg-surface-base text-gold-400 text-[10px] font-black min-w-[18px] h-[18px] px-1 rounded-full">
+                    {totalItems > 99 ? '99+' : totalItems}
                   </span>
                 )}
                 {subtotal > 0 && (
-                  <span className="hidden md:inline text-xs font-black bg-slate-950/20 px-1.5 py-0.5 rounded">
+                  <span className="hidden md:inline text-xs font-bold bg-surface-base/20 px-1.5 py-0.5 rounded">
                     ₹{subtotal.toLocaleString()}
                   </span>
                 )}
               </button>
 
-              {/* Mobile Menu Toggle */}
+              {/* Mobile Hamburger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
                 aria-label="Toggle Navigation Menu"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl px-4 pt-3 pb-5 space-y-2">
+          <div className="md:hidden border-t border-white/[0.06] bg-surface-base/98 backdrop-blur-xl px-4 pt-3 pb-4 space-y-1 animate-fade-in">
             <Link
               to="/"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-xl text-base font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg font-bold text-sm text-surface-base bg-gold-400 hover:bg-gold-300 transition-colors"
             >
-              ⚡ Quick Order / Price List Sheet
+              <ListOrdered className="w-4 h-4 flex-shrink-0" />
+              <div>
+                <div>Quick Order Sheet</div>
+                <div className="text-[11px] font-medium opacity-70">Wholesale Price List</div>
+              </div>
             </Link>
+
             <Link
               to="/products"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-xl text-base font-medium text-slate-200 hover:bg-slate-800"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/5 transition-colors"
             >
-              🎆 Visual Products Catalog
+              <LayoutGrid className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span>Products Catalog</span>
             </Link>
-            <Link
-              to="/showcase"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-xl text-base font-medium text-slate-200 hover:bg-slate-800"
-            >
-              ✨ Festive Deals Showcase
-            </Link>
+
             <Link
               to="/track-order"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-xl text-base font-medium text-slate-200 hover:bg-slate-800"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/5 transition-colors"
             >
-              📦 Track My Order
+              <span className="w-4 h-4 text-slate-400 flex-shrink-0 text-[13px] font-bold">📦</span>
+              <span>Track My Order</span>
             </Link>
+
             {onOpenSafetyModal && (
               <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenSafetyModal();
-                }}
-                className="w-full text-left px-3 py-2.5 rounded-xl text-base font-medium text-emerald-400 hover:bg-slate-800 flex items-center gap-2"
+                onClick={() => { setMobileMenuOpen(false); onOpenSafetyModal(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-emerald-400 hover:bg-white/5 transition-colors"
               >
-                <ShieldAlert className="w-5 h-5" />
+                <ShieldAlert className="w-4 h-4 flex-shrink-0" />
                 <span>Fireworks Safety & Legal Notice</span>
               </button>
             )}
-            <div className="pt-2 border-t border-slate-800/80">
+
+            {/* WhatsApp CTA */}
+            <div className="pt-2">
               <a
-                href={`https://wa.me/${storeSettings.whatsapp}?text=Hello%20Sri%20Krishna%20Fireworks,%20I%20have%20an%20inquiry`}
+                href={`https://wa.me/${storeSettings.whatsapp}?text=Hello%20Sri%20Krishna%20Fireworks,%20I%20want%20to%20place%20an%20order`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm"
+                className="flex items-center justify-center gap-2.5 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
               >
                 <PhoneCall className="w-4 h-4" />
-                <span>Chat on WhatsApp ({storeSettings.phone})</span>
+                <span>Chat on WhatsApp · {storeSettings.phone}</span>
               </a>
             </div>
           </div>

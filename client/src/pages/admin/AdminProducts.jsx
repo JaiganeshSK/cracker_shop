@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Plus,
   Edit2,
@@ -14,6 +15,7 @@ import {
   Copy,
   AlertCircle,
   Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -62,12 +64,12 @@ const AdminProducts = () => {
     try {
       const [prodRes, catRes] = await Promise.all([
         api.get('/products'),
-        api.get('/categories'),
+        api.get('/categories/admin').catch(() => api.get('/categories')),
       ]);
-      if (prodRes.data.success) setProducts(prodRes.data.products);
-      if (catRes.data.success) setCategories(catRes.data.categories);
+      if (prodRes.data?.success) setProducts(prodRes.data.products);
+      if (catRes.data?.success) setCategories(catRes.data.categories);
     } catch (err) {
-      console.error('Failed to load products:', err);
+      console.error('Failed to load products or categories:', err);
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,11 @@ const AdminProducts = () => {
 
   // Open Modal for Add
   const handleOpenAdd = () => {
-    setFormData(initialForm);
+    const defaultCat = categoryList.length > 0 ? categoryList[0] : '';
+    setFormData({
+      ...initialForm,
+      category: defaultCat,
+    });
     setIsEditing(false);
     setCurrentId(null);
     setImageFeedback('');
@@ -231,23 +237,12 @@ const AdminProducts = () => {
     }
   };
 
-  const defaultCategories = [
-    'Single Sound Crackers',
-    'Sparklers',
-    'Ground Chakkars',
-    'Flower Pots',
-    'Rockets & Missiles',
-    'Fancy Aerial & Sky Shots',
-    'Novelty & Kids Crackers',
-    'Gift Boxes & Combos',
-  ];
-
-  const categoryList =
-    categories.length > 0 ? categories.map((c) => c.name) : defaultCategories;
+  // Master categories list strictly loaded from Category Masters
+  const categoryList = categories.map((c) => c.name);
 
   // --- MULTIPLE PRODUCT INSERT HANDLERS ---
   const createEmptyProductRow = (cat) => {
-    const defaultCat = cat || (categoryList.length > 0 ? categoryList[0] : 'Sparklers');
+    const defaultCat = cat || (categoryList.length > 0 ? categoryList[0] : '');
     return {
       tempId: Date.now() + '-' + Math.random().toString(36).substring(2, 9),
       name: '',
@@ -266,7 +261,7 @@ const AdminProducts = () => {
   };
 
   const handleOpenBulkAdd = () => {
-    const initialCat = selectedCat !== 'All' ? selectedCat : (categoryList[0] || 'Sparklers');
+    const initialCat = selectedCat !== 'All' ? selectedCat : (categoryList[0] || '');
     setBulkProducts([
       createEmptyProductRow(initialCat),
       createEmptyProductRow(initialCat),
@@ -277,7 +272,7 @@ const AdminProducts = () => {
   };
 
   const handleAddBulkRow = () => {
-    const prevCat = bulkProducts.length > 0 ? bulkProducts[bulkProducts.length - 1].category : categoryList[0];
+    const prevCat = bulkProducts.length > 0 ? bulkProducts[bulkProducts.length - 1].category : (categoryList[0] || '');
     setBulkProducts((prev) => [...prev, createEmptyProductRow(prevCat)]);
   };
 
@@ -675,18 +670,43 @@ const AdminProducts = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
-                  >
-                    {categoryList.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-300 font-semibold text-xs sm:text-sm">
+                      Category <span className="text-amber-400">*</span> <span className="text-[11px] text-amber-400/80 font-normal">(From Masters)</span>
+                    </label>
+                    <Link
+                      to="/admin/categories"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1"
+                    >
+                      <span>+ Manage Masters</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                  {categoryList.length === 0 ? (
+                    <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300">
+                      No categories found in Masters.{' '}
+                      <Link to="/admin/categories" className="underline font-bold text-amber-400">
+                        Add category in Masters
+                      </Link>
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    >
+                      {formData.category && !categoryList.includes(formData.category) && (
+                        <option value={formData.category}>{formData.category} (Legacy)</option>
+                      )}
+                      {categoryList.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 
@@ -879,11 +899,20 @@ const AdminProducts = () => {
                   defaultValue=""
                   className="px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500"
                 >
-                  <option value="" disabled>Select Category</option>
+                  <option value="" disabled>Select Master Category</option>
                   {categoryList.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
+                <Link
+                  to="/admin/categories"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1"
+                >
+                  <span>Manage Masters</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </Link>
               </div>
 
               <div className="text-[11px] text-slate-500 flex items-center gap-1">

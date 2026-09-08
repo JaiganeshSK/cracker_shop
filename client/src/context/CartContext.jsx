@@ -22,6 +22,9 @@ export const CartProvider = ({ children }) => {
     defaultDeliveryFee: 250,
     whatsapp: '919443123456',
     shopName: 'Sri Krishna Fireworks',
+    logoUrl: '',
+    announcementText: '',
+    isAnnouncementActive: true,
   });
 
   // Fetch store settings for min order & delivery fees
