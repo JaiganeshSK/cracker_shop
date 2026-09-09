@@ -5,11 +5,11 @@ const Product = require('../models/Product');
 const Setting = require('../models/Setting');
 const { protect } = require('../middleware/authMiddleware');
 
-// Helper to generate readable Order ID
+// Helper to generate readable WhatsApp Order Number
 const generateOrderId = () => {
   const year = new Date().getFullYear();
   const randomNum = Math.floor(100000 + Math.random() * 900000);
-  return `CRK-${year}-${randomNum}`;
+  return `WA-${year}-${randomNum}`;
 };
 
 // @route   POST /api/orders
@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
       totalDiscount,
       deliveryFee,
       totalAmount,
-      paymentMethod: paymentMethod || 'Cash on Delivery',
+      paymentMethod: paymentMethod || 'WhatsApp Order',
       orderStatus: 'Pending',
       paymentStatus: 'Pending',
     });

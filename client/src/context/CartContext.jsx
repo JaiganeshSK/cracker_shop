@@ -16,28 +16,67 @@ export const CartProvider = ({ children }) => {
   });
 
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [storeSettings, setStoreSettings] = useState({
-    minOrderValue: 3000,
-    freeDeliveryAbove: 12000,
-    defaultDeliveryFee: 250,
-    whatsapp: '919443123456',
-    shopName: 'Sri Krishna Fireworks',
+  const [storeSettings, setStoreSettings] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cracker_store_settings');
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (e) {
+      console.warn('Failed to parse cached store settings:', e);
+    }
+    return {
+      minOrderValue: 3000,
+      freeDeliveryAbove: 12000,
+      defaultDeliveryFee: 250,
+      whatsapp: '919443123456',
+      shopName: 'Sri Krishna Fireworks',
+      logoUrl: '',
+      announcementText: '',
+      isAnnouncementActive: true,
+    };
   });
+
+  const updateStoreSettings = (newSettings) => {
+    if (!newSettings) return;
+    setStoreSettings((prev) => ({ ...prev, ...newSettings }));
+    try {
+      localStorage.setItem('cracker_store_settings', JSON.stringify(newSettings));
+    } catch (e) {
+      console.warn('Failed to cache store settings:', e);
+    }
+  };
+
+  const refreshSettings = async () => {
+    try {
+      const res = await api.get('/settings');
+      if (res.data.success && res.data.setting) {
+        updateStoreSettings(res.data.setting);
+      }
+    } catch (err) {
+      console.error('Failed to load store settings in cart:', err);
+    }
+  };
 
   // Fetch store settings for min order & delivery fees
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await api.get('/settings');
-        if (res.data.success && res.data.setting) {
-          setStoreSettings(res.data.setting);
-        }
-      } catch (err) {
-        console.error('Failed to load store settings in cart:', err);
-      }
-    };
-    fetchSettings();
+    refreshSettings();
   }, []);
+
+  // Dynamically update browser tab title and favicon based on shop settings
+  useEffect(() => {
+    if (storeSettings?.shopName) {
+      document.title = storeSettings.tagline
+        ? `${storeSettings.shopName} | ${storeSettings.tagline}`
+        : `${storeSettings.shopName} | Factory Direct Cracker Store`;
+    }
+    if (storeSettings?.logoUrl) {
+      const faviconLink = document.querySelector("link[rel*='icon']");
+      if (faviconLink) {
+        faviconLink.href = storeSettings.logoUrl;
+      }
+    }
+  }, [storeSettings?.shopName, storeSettings?.tagline, storeSettings?.logoUrl]);
 
   // Persist cart
   useEffect(() => {
@@ -118,39 +157,79 @@ export const CartProvider = ({ children }) => {
   const deliveryFee = subtotal >= freeDeliveryAbove ? 0 : defaultDeliveryFee;
   const grandTotal = subtotal + (subtotal > 0 ? deliveryFee : 0);
 
-  // Helper to format WhatsApp order message text
-  const generateWhatsAppMessage = (customerInfo = {}) => {
+  // Helper to format WhatsApp order message text with professional monospaced receipt block
+  const generateWhatsAppMessage = (customerInfo = {}, orderId = null) => {
+    const shopName = storeSettings.shopName || 'Sri Krishna Fireworks Sivakasi';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
     const lines = [
-      `🧨 *NEW CRACKER ORDER - ${storeSettings.shopName || 'Sri Krishna Fireworks'}* 🧨`,
-      `━━━━━━━━━━━━━━━━━━━━━`,
+      `*NEW WHATSAPP ORDER*`,
+      `*${shopName}*`,
+      `----------------------------------------`,
     ];
 
-    if (customerInfo.name) {
-      lines.push(`👤 *Customer:* ${customerInfo.name}`);
-      lines.push(`📞 *Phone:* ${customerInfo.phone || ''}`);
-      lines.push(`📍 *Delivery Address:* ${customerInfo.address || ''}, ${customerInfo.city || ''} - ${customerInfo.pincode || ''}`);
-      if (customerInfo.preferredDeliveryDate) {
-        lines.push(`📅 *Preferred Date:* ${customerInfo.preferredDeliveryDate}`);
-      }
-      lines.push(`━━━━━━━━━━━━━━━━━━━━━`);
+    if (orderId) {
+      lines.push(`*WhatsApp Order No:* *#${orderId}*`);
     }
 
-    lines.push(`📦 *ORDERED ITEMS (${totalItems} Pcs/Boxes):*`);
-    cart.forEach((item, idx) => {
-      lines.push(
-        `${idx + 1}. ${item.product.name} (${item.product.piecePerBox})` +
-        `\n   ↳ ${item.quantity} x ₹${item.product.price} = *₹${item.quantity * item.product.price}* (MRP ₹${item.product.mrp * item.quantity})`
-      );
+    if (customerInfo.name) {
+      const phone = customerInfo.whatsapp || customerInfo.phone || '';
+      lines.push(`*Customer:* ${customerInfo.name}${phone ? ` (${phone})` : ''}`);
+      const dest = [
+        customerInfo.address,
+        customerInfo.landmark ? `Near ${customerInfo.landmark}` : null,
+        customerInfo.city,
+        customerInfo.state || 'Tamil Nadu',
+        customerInfo.pincode,
+      ]
+        .filter(Boolean)
+        .join(', ');
+      lines.push(`*Delivery Destination:* ${dest}`);
+      if (customerInfo.preferredDeliveryDate) {
+        lines.push(`*Preferred Delivery Date:* ${customerInfo.preferredDeliveryDate}`);
+      }
+      lines.push(`----------------------------------------`);
+    }
+
+    // WhatsApp monospaced receipt block using triple backticks
+    const receiptLines = [
+      '```',
+      'QTY  ITEM DESCRIPTION          AMOUNT',
+      '--------------------------------------',
+    ];
+
+    cart.forEach((item) => {
+      const qtyStr = `${item.quantity}x`.padEnd(5, ' ');
+      // Truncate item name to 20 chars if needed
+      const rawName = item.product.name.replace(/[^\x20-\x7E]/g, '');
+      const nameStr = (rawName.length > 20 ? rawName.slice(0, 19) + '.' : rawName).padEnd(21, ' ');
+      const totalStr = `Rs.${(item.quantity * item.product.price).toLocaleString()}`.padStart(12, ' ');
+      receiptLines.push(`${qtyStr}${nameStr}${totalStr}`);
     });
 
-    lines.push(`━━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`🏷️ *MRP Total:* ₹${mrpTotal}`);
-    lines.push(`🎉 *Festival Discount Saved:* ₹${totalSavings} (${savingsPercent}% OFF)`);
-    lines.push(`💵 *Item Subtotal:* ₹${subtotal}`);
-    lines.push(`🚚 *Delivery Fee:* ${deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}`);
-    lines.push(`✨ *NET PAYABLE:* *₹${grandTotal}*`);
-    lines.push(`━━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`Please confirm my order and share payment instructions. Thank you!`);
+    receiptLines.push('--------------------------------------');
+    receiptLines.push(`Subtotal:             ${('Rs.' + subtotal.toLocaleString()).padStart(16, ' ')}`);
+    if (totalSavings > 0) {
+      receiptLines.push(`Festival Save (${savingsPercent}%): ${('-Rs.' + totalSavings.toLocaleString()).padStart(15, ' ')}`);
+    }
+    receiptLines.push(`Delivery / Freight:   ${(deliveryFee === 0 ? 'FREE' : 'Rs.' + deliveryFee).padStart(16, ' ')}`);
+    receiptLines.push('--------------------------------------');
+    receiptLines.push(`NET TOTAL PAYABLE:    ${('Rs.' + grandTotal.toLocaleString()).padStart(16, ' ')}`);
+    receiptLines.push('======================================');
+    receiptLines.push('```');
+
+    lines.push(...receiptLines);
+
+    if (orderId && origin) {
+      lines.push('');
+      lines.push(`*Order Details & Tax Invoice:*`);
+      lines.push(`${origin}/order-success/${orderId}`);
+      lines.push(`*Track Order Live:*`);
+      lines.push(`${origin}/track-order?q=${orderId}`);
+    }
+
+    lines.push('');
+    lines.push(`Please confirm this order to begin factory packing. Thank you!`);
 
     return encodeURIComponent(lines.join('\n'));
   };
@@ -178,6 +257,8 @@ export const CartProvider = ({ children }) => {
         isMinOrderMet,
         minOrderRemaining,
         storeSettings,
+        updateStoreSettings,
+        refreshSettings,
         generateWhatsAppMessage,
       }}
     >

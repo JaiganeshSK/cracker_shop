@@ -66,9 +66,9 @@ Open your browser:
 - **Quick Order Sheet**: [http://localhost:5173/quick-order](http://localhost:5173/quick-order)
 - **Admin Portal**: [http://localhost:5173/admin](http://localhost:5173/admin)
 
-### Default Admin Credentials:
-- **Username**: `admin`
-- **Password**: `admin123`
+### Admin Authentication:
+- Access the Admin Portal at `/admin`
+- Configurable via `ADMIN_USERNAME` and `ADMIN_PASSWORD` or the admin settings interface.
 
 ---
 

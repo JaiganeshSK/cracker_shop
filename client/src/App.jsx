@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { CartProvider } from './context/CartContext';
+import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 
 // Components
@@ -32,6 +32,51 @@ const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
+  const { storeSettings } = useCart();
+
+  // Dynamic route-aware browser tab title and favicon synchronization
+  React.useEffect(() => {
+    const shopName = storeSettings?.shopName || 'Fireworks Store';
+    const path = location.pathname;
+
+    let pageTitle = '';
+    if (path === '/' || path === '/quick-order') {
+      pageTitle = storeSettings?.tagline ? `${shopName} | ${storeSettings.tagline}` : `${shopName} | Sivakasi Direct Wholesale`;
+    } else if (path.startsWith('/admin/dashboard')) {
+      pageTitle = `Admin Dashboard | ${shopName}`;
+    } else if (path.startsWith('/admin/categories')) {
+      pageTitle = `Categories - Admin | ${shopName}`;
+    } else if (path.startsWith('/admin/products')) {
+      pageTitle = `Products - Admin | ${shopName}`;
+    } else if (path.startsWith('/admin/orders')) {
+      pageTitle = `Orders - Admin | ${shopName}`;
+    } else if (path.startsWith('/admin/settings')) {
+      pageTitle = `Store Settings - Admin | ${shopName}`;
+    } else if (path.startsWith('/admin/login')) {
+      pageTitle = `Admin Login | ${shopName}`;
+    } else if (path.startsWith('/checkout')) {
+      pageTitle = `Checkout | ${shopName}`;
+    } else if (path.startsWith('/order-success')) {
+      pageTitle = `Order Confirmed | ${shopName}`;
+    } else if (path.startsWith('/track-order')) {
+      pageTitle = `Track Order | ${shopName}`;
+    } else if (path.startsWith('/products') || path.startsWith('/catalog')) {
+      pageTitle = `Products Catalog | ${shopName}`;
+    } else if (path.startsWith('/showcase')) {
+      pageTitle = `Showcase | ${shopName}`;
+    } else {
+      pageTitle = `${shopName} | ${storeSettings?.tagline || 'Factory Direct Cracker Store'}`;
+    }
+
+    document.title = pageTitle;
+
+    if (storeSettings?.logoUrl) {
+      const faviconLink = document.querySelector("link[rel*='icon']");
+      if (faviconLink) {
+        faviconLink.href = storeSettings.logoUrl;
+      }
+    }
+  }, [location.pathname, storeSettings?.shopName, storeSettings?.tagline, storeSettings?.logoUrl]);
 
   return (
     <div className="min-h-screen flex flex-col relative selection:bg-amber-500 selection:text-slate-950">

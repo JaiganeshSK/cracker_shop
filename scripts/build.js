@@ -24,4 +24,13 @@ if (fs.existsSync(clientDist)) {
   process.exit(1);
 }
 
+// 4. Copy server/uploads to dist/uploads for Edge CDN static file serving
+const serverUploads = path.join(__dirname, '../server/uploads');
+const rootUploads = path.join(rootDist, 'uploads');
+
+if (fs.existsSync(serverUploads)) {
+  fs.cpSync(serverUploads, rootUploads, { recursive: true });
+  console.log('✅ Copied server/uploads to ./dist/uploads for Global Edge CDN serving!');
+}
+
 console.log('🎉 Production build complete!');

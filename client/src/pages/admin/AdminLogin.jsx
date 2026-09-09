@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, User, Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const { storeSettings } = useCart();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -35,7 +37,7 @@ const AdminLogin = () => {
           </div>
           <h1 className="text-2xl font-black text-white">Admin Management Portal</h1>
           <p className="text-xs text-slate-400">
-            Secure access for Sri Krishna Fireworks Sivakasi
+            Secure access for {storeSettings?.shopName || 'Sri Krishna Fireworks Sivakasi'}
           </p>
         </div>
 
@@ -54,9 +56,10 @@ const AdminLogin = () => {
               <input
                 type="text"
                 required
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
+                placeholder="Enter admin username"
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
               />
             </div>
@@ -69,17 +72,13 @@ const AdminLogin = () => {
               <input
                 type="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter password"
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
               />
             </div>
-          </div>
-
-          <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400">
-            <span>Default Seed Credentials: </span>
-            <span className="text-amber-400 font-mono font-bold">admin / admin123</span>
           </div>
 
           <button

@@ -1,66 +1,433 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    background-color: #080c14;
+  }
+
+  body {
+    background-color: #080c14;
+    color: #e2e8f0;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
   }
+
+  p, span, div, a, button, input, select, textarea, label {
+    font-family: 'Inter', 'Outfit', system-ui, sans-serif;
+  }
+
+  /* Prevent iOS auto-zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* Remove number input spinner arrows */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* Smooth rendering */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-/* Custom festive glassmorphism */
+/* ─── Glass Panels ────────────────────────────────────────────────────── */
 .glass-panel {
-  background: rgba(19, 27, 46, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #0d1420;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-nav {
-  background: rgba(10, 14, 23, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: #080c14;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Glow effects */
+.glass-bottom-nav {
+  background: #080c14;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Premium Card ───────────────────────────────────────────────────── */
+.premium-card {
+  background: #0d1420;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.premium-card:hover {
+  border-color: rgba(212, 160, 23, 0.3);
+  box-shadow: 0 12px 40px -12px rgba(212, 160, 23, 0.12);
+  transform: translateY(-2px);
+}
+
+/* ─── Section Label ──────────────────────────────────────────────────── */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d4a017;
+  margin-bottom: 8px;
+}
+
+/* ─── Divider Line ───────────────────────────────────────────────────── */
+.divider-line {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Gold Button ────────────────────────────────────────────────────── */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #d4a017;
+  color: #080c14;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 16px -4px rgba(212, 160, 23, 0.35);
+}
+
+.btn-gold:hover {
+  background-color: #e8b830;
+  box-shadow: 0 6px 20px -4px rgba(212, 160, 23, 0.45);
+}
+
+.btn-gold:active {
+  transform: scale(0.97);
+}
+
+/* ─── Ghost Button ───────────────────────────────────────────────────── */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #e2e8f0;
+}
+
+/* ─── Glow Effects ───────────────────────────────────────────────────── */
 .glow-gold {
-  box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 20px -4px rgba(212, 160, 23, 0.28);
 }
 
 .glow-crimson {
-  box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 20px -4px rgba(220, 38, 38, 0.32);
 }
 
-/* Smooth custom scrollbars */
+.glow-amber-btn {
+  box-shadow: 0 4px 20px -4px rgba(212, 160, 23, 0.38);
+}
+
+/* ─── Subtle Hero Background ─────────────────────────────────────────── */
+.hero-bg {
+  position: relative;
+  background-color: #080c14;
+}
+
+.hero-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(212, 160, 23, 0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 85% 90%, rgba(184, 134, 11, 0.05) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Shimmer / Skeleton ─────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(17, 24, 39, 0.9) 25%,
+    rgba(31, 41, 55, 0.95) 50%,
+    rgba(17, 24, 39, 0.9) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ─── Pulse Ring (Cart Badge Animation) ──────────────────────────────── */
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.pulse-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.5);
+  animation: pulse-ring 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* ─── Slide Up Animation ─────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Fade In ────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out both;
+}
+
+/* ─── Fade Slide Up (stagger) ────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Drawer ─────────────────────────────────────────────────────────── */
+@keyframes drawerIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.animate-drawer-in {
+  animation: drawerIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0e17;
+  background: #080c14;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
+  background: #1a2336;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #243247;
 }
 
-/* Print styling for packing slip & invoices */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Safe Area Utilities (iPhone notch / home bar) ─────────────────── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── Card Hover (legacy) ────────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px -12px rgba(212, 160, 23, 0.12);
+}
+
+/* ─── Invoice Scroll Area ────────────────────────────────────────────── */
+.invoice-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #0f172a;
+  overscroll-behavior: contain;
+}
+
+.invoice-scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.invoice-scroll-area::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+.invoice-scroll-area::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.invoice-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ─── Professional Print Styles ───────────────────────────────────────── */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  *,
+  *::before,
+  *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  html,
   body {
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  .no-print {
+
+  #root {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide screen chrome & controls */
+  .no-print,
+  nav,
+  footer,
+  aside,
+  header,
+  .mobile-bottom-nav,
+  .cart-drawer,
+  button,
+  input,
+  select {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
   }
+
+  /* Prevent modals from trapping print content inside fixed 0-height boxes */
+  .fixed {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+
+  .overflow-y-auto,
+  .overflow-hidden,
+  .overflow-x-auto {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Clean up panel styles during print */
+  .glass-panel,
+  .bg-slate-900,
+  .bg-slate-950 {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Printable Invoice Container */
+  #printable-invoice {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 4mm 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  #printable-invoice table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  #printable-invoice thead {
+    display: table-header-group !important;
+  }
+
+  #printable-invoice tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #printable-invoice tfoot {
+    display: table-footer-group !important;
+  }
 }
+

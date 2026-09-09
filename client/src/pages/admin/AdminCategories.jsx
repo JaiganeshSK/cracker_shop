@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Layers, CheckCircle2, X, AlertCircle, Sparkles, FolderTree } from 'lucide-react';
 import api from '../../services/api';
+import {
+  showSuccessToast,
+  showErrorToast,
+  showConfirmDialog,
+  showNotification,
+} from '../../utils/swal';
 
 const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -79,21 +85,22 @@ const AdminCategories = () => {
       if (isEditing) {
         const res = await api.put(`/categories/${currentId}`, formData);
         if (res.data.success) {
-          setSuccessMsg('Category updated successfully!');
+          showSuccessToast(`Category "${formData.name}" updated!`);
           fetchCategories();
           setIsModalOpen(false);
         }
       } else {
         const res = await api.post('/categories', formData);
         if (res.data.success) {
-          setSuccessMsg('New category created successfully!');
+          showSuccessToast(`Category "${formData.name}" created!`);
           fetchCategories();
           setIsModalOpen(false);
         }
       }
-      setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Error saving category');
+      const msg = err.response?.data?.message || 'Error saving category';
+      setErrorMsg(msg);
+      showErrorToast(msg);
     } finally {
       setSaving(false);
     }
@@ -101,20 +108,30 @@ const AdminCategories = () => {
 
   const handleDelete = async (cat) => {
     if (cat.productCount > 0) {
-      alert(`Cannot delete "${cat.name}" because ${cat.productCount} product(s) are currently categorized under it. Please reassign those products first.`);
+      showNotification({
+        icon: 'warning',
+        title: 'Cannot Delete Category',
+        text: `Cannot delete "${cat.name}" because ${cat.productCount} product(s) are assigned to it. Please reassign those items first.`,
+      });
       return;
     }
 
-    if (window.confirm(`Are you sure you want to delete category "${cat.name}"?`)) {
+    const result = await showConfirmDialog({
+      title: 'Delete Category?',
+      text: `Are you sure you want to delete category "${cat.name}"?`,
+      confirmButtonText: 'Yes, Delete',
+      confirmColor: 'rose',
+    });
+
+    if (result.isConfirmed) {
       try {
         const res = await api.delete(`/categories/${cat._id}`);
         if (res.data.success) {
           setCategories((prev) => prev.filter((c) => c._id !== cat._id));
-          setSuccessMsg('Category deleted successfully');
-          setTimeout(() => setSuccessMsg(''), 3000);
+          showSuccessToast(`"${cat.name}" deleted successfully`);
         }
       } catch (err) {
-        alert(err.response?.data?.message || 'Failed to delete category');
+        showErrorToast(err.response?.data?.message || 'Failed to delete category');
       }
     }
   };
@@ -241,8 +258,8 @@ const AdminCategories = () => {
 
       {/* ADD / EDIT MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-5 sm:p-6 lg:p-8 space-y-5 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <h3 className="text-xl font-black text-white">

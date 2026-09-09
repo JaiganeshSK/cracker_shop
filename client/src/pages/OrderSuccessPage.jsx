@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import { CheckCircle2, Copy, Check, Printer, MessageSquare, ArrowRight, Package, Home } from 'lucide-react';
+import { Copy, Check, Printer, Package, Eye } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import api from '../services/api';
+import { useCart } from '../context/CartContext';
+import InvoiceModal from '../components/InvoiceModal';
+import { printInvoice } from '../utils/printInvoice';
 
 const OrderSuccessPage = () => {
   const { orderId } = useParams();
   const location = useLocation();
+  const { storeSettings } = useCart();
   const [order, setOrder] = useState(location.state?.order || null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(!order);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   useEffect(() => {
     // Fire celebratory festive confetti
@@ -50,21 +55,9 @@ const OrderSuccessPage = () => {
   };
 
   const handlePrint = () => {
-    window.print();
-  };
-
-  const handleWhatsAppShare = () => {
-    if (!order) return;
-    const text =
-      `🧨 *ORDER CONFIRMATION - Sri Krishna Fireworks* 🧨\n` +
-      `*Order ID:* ${order.orderId}\n` +
-      `*Customer:* ${order.customer.name} (${order.customer.phone})\n` +
-      `*Total Amount:* ₹${order.totalAmount}\n` +
-      `*Status:* ${order.orderStatus}\n` +
-      `*Delivery Address:* ${order.customer.address}, ${order.customer.city} - ${order.customer.pincode}\n\n` +
-      `Please confirm receipt and courier dispatch updates!`;
-
-    window.open(`https://wa.me/919443123456?text=${encodeURIComponent(text)}`, '_blank');
+    if (order) {
+      printInvoice(order, storeSettings);
+    }
   };
 
   if (loading) {
@@ -85,20 +78,20 @@ const OrderSuccessPage = () => {
 
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-            Order Successfully Placed!
+            WhatsApp Order Successfully Placed!
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-white mt-1">
             Thank You for Celebrating With Us!
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto mt-2">
-            Your festive cracker order has been received at our Sivakasi factory. Our dispatch team is packing your consignment.
+            Your festive cracker order details have been sent to our factory. Our team will verify and chat with you on WhatsApp.
           </p>
         </div>
 
-        {/* Order ID Pill */}
-        <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
-          <span className="text-xs text-slate-400">Order Reference ID:</span>
-          <span className="font-mono font-bold text-amber-400 text-sm sm:text-base">
+        {/* WhatsApp Order Number Pill */}
+        <div className="inline-flex items-center gap-2 bg-slate-900 border border-emerald-500/40 px-4 py-2 rounded-xl shadow-lg shadow-emerald-950/40">
+          <span className="text-xs text-slate-400">WhatsApp Order Number:</span>
+          <span className="font-mono font-bold text-emerald-400 text-sm sm:text-base">
             {order?.orderId || orderId}
           </span>
           <button
@@ -110,6 +103,7 @@ const OrderSuccessPage = () => {
           </button>
         </div>
       </div>
+
 
       {/* Itemized Receipt & Delivery Slip */}
       {order && (
@@ -124,10 +118,19 @@ const OrderSuccessPage = () => {
             <div className="flex items-center gap-2 no-print">
               <button
                 onClick={handlePrint}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+                title="Print Tax Invoice Directly"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>Print Bill</span>
+                <span>Print Invoice</span>
+              </button>
+              <button
+                onClick={() => setIsInvoiceOpen(true)}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Preview Full A4 Invoice"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Preview</span>
               </button>
             </div>
           </div>
@@ -198,23 +201,23 @@ const OrderSuccessPage = () => {
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 no-print">
-        <button
-          type="button"
-          onClick={handleWhatsAppShare}
-          className="w-full sm:w-1/2 py-3 rounded-xl font-bold text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all active:scale-95"
-        >
-          <MessageSquare className="w-4 h-4" />
-          <span>Confirm on WhatsApp With Factory</span>
-        </button>
-
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 no-print">
         <Link
           to={`/track-order?q=${order?.orderId || orderId}`}
-          className="w-full sm:w-1/2 py-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex items-center justify-center gap-2 transition-colors"
+          className="w-full sm:w-1/2 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
         >
           <Package className="w-4 h-4" />
-          <span>Track Order Status</span>
+          <span>Track Live Order Status</span>
         </Link>
+
+        <button
+          type="button"
+          onClick={handlePrint}
+          className="w-full sm:w-1/2 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+        >
+          <Printer className="w-4 h-4" />
+          <span>Print / Download Tax Invoice</span>
+        </button>
       </div>
 
       <div className="text-center no-print pt-2">
@@ -223,6 +226,14 @@ const OrderSuccessPage = () => {
           <span>Return to Store Home</span>
         </Link>
       </div>
+
+      {/* Professional Tax Invoice Modal */}
+      <InvoiceModal
+        isOpen={isInvoiceOpen}
+        onClose={() => setIsInvoiceOpen(false)}
+        order={order}
+        storeSettings={storeSettings}
+      />
     </div>
   );
 };

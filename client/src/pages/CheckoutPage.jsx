@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Truck, ArrowLeft, QrCode, CheckCircle, AlertCircle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, AlertCircle, MessageSquare } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
 
@@ -37,7 +37,7 @@ const CheckoutPage = () => {
     preferredDeliveryDate: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
+  const paymentMethod = 'WhatsApp Order';
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -47,6 +47,7 @@ const CheckoutPage = () => {
 
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     setErrorMsg('');
 
     if (!isMinOrderMet) {
@@ -60,6 +61,30 @@ const CheckoutPage = () => {
     }
 
     setSubmitting(true);
+
+    // Pre-open window synchronously during user click to bypass browser popup blockers
+    const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let waTab = null;
+    if (!isMobile) {
+      try {
+        waTab = window.open('', '_blank');
+        if (waTab) {
+          try {
+            waTab.document.title = 'Connecting to WhatsApp...';
+            waTab.document.body.innerHTML = `
+              <div style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; color: #334155; text-align: center;">
+                <div style="font-size: 40px; margin-bottom: 12px;">💬</div>
+                <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #0f172a;">Connecting to WhatsApp...</h2>
+                <p style="margin: 0; font-size: 13px; color: #64748b;">Preparing your festive cracker order details...</p>
+              </div>
+            `;
+          } catch (_) {}
+        }
+      } catch (_) {
+        waTab = null;
+      }
+    }
+
     try {
       const orderPayload = {
         customer: {
@@ -90,21 +115,46 @@ const CheckoutPage = () => {
       const res = await api.post('/orders', orderPayload);
       if (res.data.success && res.data.order) {
         const createdOrder = res.data.order;
-        clearCart();
-        navigate(`/order-success/${createdOrder.orderId}`, { state: { order: createdOrder } });
+
+        // Generate complete WhatsApp receipt with the new WhatsApp Order Number
+        const msg = generateWhatsAppMessage(formData, createdOrder.orderId);
+        const shopWhatsApp = storeSettings?.whatsapp || '916369050467';
+        const waUrl = `https://wa.me/${shopWhatsApp}?text=${msg}`;
+
+        if (isMobile) {
+          // Mobile: Transition route first so return from WhatsApp lands on Order Success
+          clearCart();
+          navigate(`/order-success/${createdOrder.orderId}`, {
+            replace: true,
+            state: { order: createdOrder },
+          });
+          window.location.href = waUrl;
+        } else {
+          // Desktop: Send pre-opened tab to WhatsApp, and navigate current tab to success
+          if (waTab && !waTab.closed) {
+            waTab.location.href = waUrl;
+          } else {
+            const fallbackWin = window.open(waUrl, '_blank');
+            if (!fallbackWin) {
+              window.location.href = waUrl;
+            }
+          }
+
+          clearCart();
+          navigate(`/order-success/${createdOrder.orderId}`, {
+            state: { order: createdOrder },
+          });
+        }
       }
     } catch (err) {
+      if (waTab && !waTab.closed) {
+        waTab.close();
+      }
       console.error('Order submission error:', err);
-      setErrorMsg(err.response?.data?.message || 'Failed to place order. Please try again or order via WhatsApp.');
+      setErrorMsg(err.response?.data?.message || 'Failed to place order. Please try again.');
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleWhatsAppCheckout = () => {
-    const msg = generateWhatsAppMessage(formData);
-    const url = `https://wa.me/${storeSettings.whatsapp}?text=${msg}`;
-    window.open(url, '_blank');
   };
 
   if (cart.length === 0) {
@@ -303,83 +353,26 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Payment Method Selector */}
-            <div className="pt-4 border-t border-slate-800">
-              <label className="block text-slate-300 font-bold mb-3">Select Payment Method</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
-                    paymentMethod === 'Cash on Delivery'
-                      ? 'border-amber-500 bg-amber-500/10 text-white'
-                      : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="Cash on Delivery"
-                    checked={paymentMethod === 'Cash on Delivery'}
-                    onChange={() => setPaymentMethod('Cash on Delivery')}
-                    className="mt-1 accent-amber-500"
-                  />
-                  <div>
-                    <div className="font-bold text-white text-xs sm:text-sm">Cash on Delivery (COD)</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      Pay on delivery via transport parcel office / doorstep.
-                    </div>
-                  </div>
-                </label>
-
-                <label
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
-                    paymentMethod === 'UPI / Online Transfer'
-                      ? 'border-amber-500 bg-amber-500/10 text-white'
-                      : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="UPI / Online Transfer"
-                    checked={paymentMethod === 'UPI / Online Transfer'}
-                    onChange={() => setPaymentMethod('UPI / Online Transfer')}
-                    className="mt-1 accent-amber-500"
-                  />
-                  <div>
-                    <div className="font-bold text-white text-xs sm:text-sm">Direct UPI / GPay / PhonePe</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      UPI ID: <span className="text-amber-400 font-mono">{storeSettings.upiId || 'srikrishnafireworks@upi'}</span>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
-
             {/* Actions */}
-            <div className="pt-4 space-y-3">
+            <div className="pt-6 border-t border-slate-800 space-y-3">
               <button
                 type="submit"
                 disabled={submitting || !isMinOrderMet}
-                className="w-full py-3.5 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 text-slate-950 shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                className="w-full py-4 rounded-xl font-extrabold text-sm sm:text-base bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? (
-                  <span>Securing Your Order...</span>
+                  <span>Assigning WhatsApp Order Number...</span>
                 ) : (
                   <>
-                    <CheckCircle className="w-5 h-5" />
-                    <span>Confirm & Place Order (₹{grandTotal.toLocaleString()})</span>
+                    <MessageSquare className="w-5 h-5 fill-white text-emerald-600" />
+                    <span>Place Order via WhatsApp (₹{grandTotal.toLocaleString()})</span>
                   </>
                 )}
               </button>
 
-              <button
-                type="button"
-                onClick={handleWhatsAppCheckout}
-                className="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center gap-2 transition-colors"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Submit & Order via WhatsApp Instantly</span>
-              </button>
+              <p className="text-center text-[11px] text-slate-400">
+                Your order will receive an official <strong className="text-amber-400">WhatsApp Order Number</strong> and be sent to our factory WhatsApp for packing &amp; dispatch.
+              </p>
             </div>
           </form>
         </div>

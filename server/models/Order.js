@@ -79,8 +79,14 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['Cash on Delivery', 'UPI / Online Transfer'],
-      default: 'Cash on Delivery',
+      enum: [
+        'WhatsApp Order',
+        'WhatsApp Order / UPI Confirmation',
+        'WhatsApp Order (COD)',
+        'Cash on Delivery',
+        'UPI / Online Transfer',
+      ],
+      default: 'WhatsApp Order',
     },
     paymentStatus: {
       type: String,

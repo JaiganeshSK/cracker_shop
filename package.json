@@ -6,7 +6,8 @@
     "server": "cd server && npm start",
     "client": "cd client && npm run dev",
     "build": "node scripts/build.js",
-    "seed": "cd server && npm run seed"
+    "seed": "cd server && npm run seed",
+    "update-admin": "cd server && npm run update-admin"
   },
   "keywords": [
     "crackers",

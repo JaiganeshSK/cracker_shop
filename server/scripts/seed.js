@@ -7,10 +7,9 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const Admin = require('../models/Admin');
 const Setting = require('../models/Setting');
+const connectDB = require('../config/db');
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/cracker_shop';
 
 // Helper to generate a festive SVG banner converted to .webp for realistic seeding
 async function generatePlaceholderWebP(name, category, color1, color2, filename) {
@@ -80,19 +79,19 @@ async function generatePlaceholderWebP(name, category, color1, color2, filename)
 
 const seedDatabase = async () => {
   try {
-    await mongoose.connect(MONGODB_URI);
+    await connectDB();
     console.log('[Seed] Connected to MongoDB');
 
     // 1. Create Default Admin User
     await Admin.deleteMany({});
     const admin = new Admin({
-      username: 'admin',
-      password: 'admin123',
+      username: process.env.ADMIN_USERNAME || 'admin',
+      password: process.env.ADMIN_PASSWORD || 'Pradhika@123',
       name: 'Super Admin',
       role: 'admin',
     });
     await admin.save();
-    console.log('[Seed] Created default admin: admin / admin123');
+    console.log(`[Seed] Created default admin: ${admin.username}`);
 
     // 2. Create Default Store Settings
     await Setting.deleteMany({});

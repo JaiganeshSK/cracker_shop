@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "update-admin": "node scripts/update-admin.js"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, PackageCheck, Truck, CheckCircle2, Clock, AlertCircle, Phone, MapPin } from 'lucide-react';
+import { Search, PackageCheck, Truck, CheckCircle2, Clock, AlertCircle, Phone, MapPin, Printer, Eye, MessageSquare } from 'lucide-react';
 import api from '../services/api';
+import { useCart } from '../context/CartContext';
+import InvoiceModal from '../components/InvoiceModal';
+import { printInvoice } from '../utils/printInvoice';
 
 const TrackOrderPage = () => {
   const [searchParams] = useSearchParams();
@@ -11,6 +14,11 @@ const TrackOrderPage = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Invoice modal state
+  const { storeSettings } = useCart();
+  const [invoiceOrder, setInvoiceOrder] = useState(null);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   const statusSteps = ['Pending', 'Confirmed', 'Packed', 'Dispatched', 'Delivered'];
 
@@ -46,6 +54,11 @@ const TrackOrderPage = () => {
     return idx >= 0 ? idx : 0;
   };
 
+  const handleOpenInvoice = (order) => {
+    setInvoiceOrder(order);
+    setIsInvoiceOpen(true);
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 pb-24 space-y-8">
       {/* Title */}
@@ -57,7 +70,7 @@ const TrackOrderPage = () => {
           Track Your Cracker Order
         </h1>
         <p className="text-xs sm:text-sm text-slate-400">
-          Enter your Order ID (e.g. CRK-2026-1048) or registered Phone Number to track factory packing and dispatch.
+          Enter your WhatsApp Order Number (e.g. WA-2026-1048) or registered Phone Number to track factory packing and dispatch.
         </p>
       </div>
 
@@ -68,7 +81,7 @@ const TrackOrderPage = () => {
           <input
             type="text"
             required
-            placeholder="Order ID (CRK-...) or 10-digit Phone"
+            placeholder="WhatsApp Order ID (WA-...) or 10-digit Phone"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
@@ -105,8 +118,9 @@ const TrackOrderPage = () => {
                 {/* Order Top Summary */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-bold text-amber-400">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-slate-400">WhatsApp Order:</span>
+                      <span className="font-mono text-sm font-bold text-emerald-400">
                         {order.orderId}
                       </span>
                       <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
@@ -118,9 +132,21 @@ const TrackOrderPage = () => {
                     </div>
                   </div>
 
-                  <div className="text-left sm:text-right">
-                    <div className="text-xs text-slate-400">Total Consignment Value</div>
-                    <div className="text-lg font-black text-white">₹{order.totalAmount.toLocaleString()}</div>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={`https://wa.me/${storeSettings?.whatsapp || '919443123456'}?text=${encodeURIComponent(`Hello, I am inquiring regarding my WhatsApp Order #${order.orderId} (Customer: ${order.customer.name}). Please share dispatch details.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-colors"
+                      title="Chat with Shop on WhatsApp"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>WhatsApp Support</span>
+                    </a>
+                    <div className="text-left sm:text-right">
+                      <div className="text-xs text-slate-400">Total Value</div>
+                      <div className="text-lg font-black text-white">₹{order.totalAmount.toLocaleString()}</div>
+                    </div>
                   </div>
                 </div>
 
@@ -201,11 +227,45 @@ const TrackOrderPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Card Action Bar with Invoice Button */}
+                <div className="flex items-center justify-between pt-3 mt-1 border-t border-slate-800/80 no-print">
+                  <div className="text-xs text-slate-400">
+                    Grand Total: <span className="font-black text-amber-400 text-sm">₹{order.totalAmount?.toLocaleString()}</span>
+                    <span className="ml-2 text-[11px] text-slate-500">({order.paymentMethod})</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => printInvoice(order, storeSettings)}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+                      title="Print Tax Invoice Directly"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Print Invoice</span>
+                    </button>
+                    <button
+                      onClick={() => handleOpenInvoice(order)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                      title="Preview Full A4 Invoice"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Preview</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Professional Tax Invoice Modal */}
+      <InvoiceModal
+        isOpen={isInvoiceOpen}
+        onClose={() => setIsInvoiceOpen(false)}
+        order={invoiceOrder}
+        storeSettings={storeSettings}
+      />
     </div>
   );
 };

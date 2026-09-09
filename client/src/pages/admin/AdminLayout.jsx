@@ -15,9 +15,11 @@ import {
   FolderTree,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 
 const AdminLayout = () => {
   const { isAuthenticated, loading, admin, logout } = useAuth();
+  const { storeSettings } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -79,7 +81,7 @@ const AdminLayout = () => {
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-extrabold text-white text-sm">Sri Krishna Fireworks</div>
+            <div className="font-extrabold text-white text-sm">{storeSettings?.shopName || 'Sri Krishna Fireworks'}</div>
             <div className="text-[10px] text-amber-400 font-semibold">Admin Workspace</div>
           </div>
         </div>

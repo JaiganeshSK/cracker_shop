@@ -1,7 +1,9 @@
 import React from 'react';
 import { X, ShieldAlert, CheckCircle2, AlertTriangle, Phone, Flame } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 
 const SafetyModal = ({ isOpen, onClose }) => {
+  const { storeSettings } = useCart();
   if (!isOpen) return null;
 
   return (
@@ -32,7 +34,7 @@ const SafetyModal = ({ isOpen, onClose }) => {
           <div>
             <span className="font-bold">100% Certified Green Crackers</span>
             <p className="text-emerald-300/80 mt-1 leading-relaxed">
-              All fireworks supplied from Sri Krishna Fireworks Sivakasi are manufactured under PESO licensed formulations with reduced particulate emissions (SWAS, STAR, SAFAL) in compliance with Supreme Court directives.
+              All fireworks supplied from {storeSettings?.shopName || 'Sri Krishna Fireworks Sivakasi'} are manufactured under PESO licensed formulations with reduced particulate emissions (SWAS, STAR, SAFAL) in compliance with Supreme Court directives.
             </p>
           </div>
         </div>

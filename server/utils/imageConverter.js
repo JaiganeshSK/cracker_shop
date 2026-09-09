@@ -49,25 +49,31 @@ const uploadImageToBlob = async (buffer, folder = 'products') => {
     })
     .toBuffer();
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  // Sanitize token: remove quotes, semicolons, and whitespace
+  const rawToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const token = rawToken ? rawToken.trim().replace(/^["']|["'];?$/g, '').replace(/;$/, '').trim() : null;
 
   if (token) {
-    // Upload to Vercel Blob
-    const blob = await put(blobPath, webpBuffer, {
-      access: 'public',
-      token,
-      contentType: 'image/webp',
-    });
+    try {
+      // Upload to Vercel Blob
+      const blob = await put(blobPath, webpBuffer, {
+        access: 'public',
+        token,
+        contentType: 'image/webp',
+      });
 
-    return {
-      url: blob.url,
-      filename: filename,
-      pathname: blob.pathname,
-      size: webpBuffer.length,
-      mimeType: 'image/webp',
-      storage: 'vercel-blob',
-      uploadedAt: new Date(),
-    };
+      return {
+        url: blob.url,
+        filename: filename,
+        pathname: blob.pathname,
+        size: webpBuffer.length,
+        mimeType: 'image/webp',
+        storage: 'vercel-blob',
+        uploadedAt: new Date(),
+      };
+    } catch (blobErr) {
+      console.warn(`[Vercel Blob] Upload failed (${blobErr.message}). Falling back to local disk storage.`);
+    }
   }
 
   // Fallback to local disk if BLOB_READ_WRITE_TOKEN is not configured
@@ -107,7 +113,8 @@ const convertToWebP = async (buffer) => {
 const deleteImageFile = async (fileUrl) => {
   if (!fileUrl) return;
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  const rawToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const token = rawToken ? rawToken.trim().replace(/^["']|["'];?$/g, '').replace(/;$/, '').trim() : null;
 
   // If Vercel Blob URL
   if (fileUrl.includes('vercel-storage.com') || fileUrl.includes('blob.vercel-storage.com')) {

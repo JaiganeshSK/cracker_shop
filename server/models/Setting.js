@@ -6,6 +6,10 @@ const settingSchema = new mongoose.Schema(
       type: String,
       default: 'Festive Spark Fireworks',
     },
+    logoUrl: {
+      type: String,
+      default: '',
+    },
     tagline: {
       type: String,
       default: 'Direct from Sivakasi Factory • Premium Green Crackers',
