@@ -17,22 +17,22 @@ const Navbar = ({ onOpenSafetyModal }) => {
   const isLinkActive = (paths) => paths.includes(location.pathname);
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#080c14] border-b border-white/[0.08] shadow-lg">
-      {/* Announcement Bar - Solid, rich, non-transparent banner */}
+    <header className="sticky top-0 z-40 w-full glass-nav" style={{ boxShadow: '0 1px 0 rgba(255,255,255,0.05), 0 4px 24px -4px rgba(0,0,0,0.4)' }}>
+      {/* Announcement Bar */}
       {storeSettings.isAnnouncementActive && (
-        <div className="bg-[#d4a017] text-[#080c14] text-xs py-2 overflow-hidden flex font-bold shadow-inner">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#b8860b] via-[#d4a017] to-[#b8860b] text-[#060b15] text-xs py-2 flex font-bold">
           <div className="animate-marquee whitespace-nowrap flex items-center gap-12 pr-12">
             <span className="flex items-center gap-2 tracking-wide font-extrabold">
               <Flame className="w-3.5 h-3.5 inline-block fill-current" />
               {storeSettings.announcementText}
-              <span className="bg-[#080c14] text-[#d4a017] px-2 py-0.5 rounded font-black text-[11px] shadow-sm">
+              <span className="bg-[#060b15] text-[#d4a017] px-2 py-0.5 rounded font-black text-[11px] shadow-sm">
                 Min ₹{storeSettings.minOrderValue}
               </span>
             </span>
             <span className="flex items-center gap-2 tracking-wide font-extrabold">
               <Flame className="w-3.5 h-3.5 inline-block fill-current" />
               {storeSettings.announcementText}
-              <span className="bg-[#080c14] text-[#d4a017] px-2 py-0.5 rounded font-black text-[11px] shadow-sm">
+              <span className="bg-[#060b15] text-[#d4a017] px-2 py-0.5 rounded font-black text-[11px] shadow-sm">
                 Min ₹{storeSettings.minOrderValue}
               </span>
             </span>
@@ -41,7 +41,7 @@ const Navbar = ({ onOpenSafetyModal }) => {
       )}
 
       {/* Main Navigation */}
-      <div className="glass-nav bg-[#080c14]">
+      <div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 gap-4">
 
@@ -53,13 +53,11 @@ const Navbar = ({ onOpenSafetyModal }) => {
                     src={storeSettings.logoUrl}
                     alt={storeSettings.shopName || 'Store Logo'}
                     className="max-h-full max-w-full object-contain rounded"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-gold-400 flex items-center justify-center flex-shrink-0 group-hover:bg-gold-300 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-300 to-gold-500 flex items-center justify-center flex-shrink-0 group-hover:from-gold-200 group-hover:to-gold-400 transition-all shadow-lg shadow-gold-500/20">
                   <Flame className="w-4 h-4 text-surface-base" />
                 </div>
               )}
@@ -82,21 +80,22 @@ const Navbar = ({ onOpenSafetyModal }) => {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2 ${
+                    className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                       active
-                        ? 'text-gold-400 bg-gold-400/10'
+                        ? 'text-gold-400'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     {Icon && <Icon className="w-4 h-4" />}
                     <span>{link.label}</span>
+                    {active && <span className="nav-active-line" />}
                   </Link>
                 );
               })}
               {onOpenSafetyModal && (
                 <button
                   onClick={onOpenSafetyModal}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-400/80 hover:text-emerald-300 hover:bg-white/5 transition-colors flex items-center gap-2"
+                  className="relative px-4 py-2 rounded-lg text-sm font-semibold text-emerald-400/80 hover:text-emerald-300 hover:bg-white/5 transition-colors flex items-center gap-2"
                 >
                   <ShieldAlert className="w-4 h-4" />
                   <span>Safety</span>
@@ -106,11 +105,11 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 <button
                   type="button"
                   onClick={() => setIsPriceListModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-all flex items-center gap-1.5 shadow-sm"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-300 badge-gradient hover:opacity-90 transition-all flex items-center gap-1.5"
                   title="Wholesale Price List (PDF)"
                 >
                   <FileText className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Price List (PDF)</span>
+                  <span>Price List</span>
                 </button>
               )}
             </nav>
@@ -122,32 +121,33 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 href={`https://wa.me/${String(storeSettings?.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${storeSettings?.shopName || 'Store'}, I want to place an order`)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 transition-colors"
+                className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/35 transition-all"
               >
                 <WhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
                 <span>WhatsApp</span>
               </a>
 
-              {/* Admin Portal — Top of the screen */}
+              {/* Admin Portal */}
               <Link
                 to="/admin/login"
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 hover:bg-white/5 transition-all"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-white border border-slate-800 hover:border-slate-700 hover:bg-white/5 transition-all"
                 title="Admin Portal Login"
               >
-                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                <Lock className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Admin</span>
               </Link>
+
 
               {/* Cart Button */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-2 bg-gold-400 hover:bg-gold-300 text-surface-base font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg shadow-lg shadow-gold-400/20 transition-all duration-150 active:scale-95"
+                className="btn-ripple relative flex items-center gap-2 btn-gold px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm"
                 aria-label="View shopping cart"
               >
                 <ShoppingBag className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
-                <span className="hidden sm:inline text-sm">Cart</span>
+                <span className="hidden sm:inline font-bold">Cart</span>
                 {totalItems > 0 && (
-                  <span className="relative flex items-center justify-center bg-surface-base text-gold-400 text-[10px] font-black min-w-[18px] h-[18px] px-1 rounded-full">
+                  <span className="badge-bounce relative flex items-center justify-center bg-surface-base text-gold-400 text-[10px] font-black min-w-[18px] h-[18px] px-1 rounded-full">
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
                 )}
@@ -172,7 +172,8 @@ const Navbar = ({ onOpenSafetyModal }) => {
 
         {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-white/[0.06] bg-surface-base/98 backdrop-blur-xl px-4 pt-3 pb-4 space-y-1 animate-fade-in">
+          <div className="md:hidden border-t border-white/[0.06] bg-[#060b15]/95 backdrop-blur-2xl px-4 pt-3 pb-4 space-y-1 animate-fade-up">
+
             <Link
               to="/"
               onClick={() => setMobileMenuOpen(false)}

@@ -8,15 +8,21 @@ const Footer = ({ onOpenSafetyModal }) => {
   const { storeSettings } = useCart();
 
   return (
-    <footer className="relative z-20 bg-[#080c14] border-t border-white/[0.08] text-slate-400 text-sm">
-
-      {/* Main Footer Body with generous bottom padding to prevent clipping by bottom bars */}
+    <footer className="relative z-20 text-slate-400 text-sm" style={{
+      background: 'linear-gradient(180deg, rgba(8,11,21,0) 0%, #060b15 40px)',
+      borderTop: '1px solid transparent',
+      backgroundImage: 'linear-gradient(#060b15, #060b15), linear-gradient(90deg, transparent 0%, rgba(212,160,23,0.3) 35%, rgba(212,160,23,0.3) 65%, transparent 100%)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+    }}>
+      {/* Main Footer Body */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-48 sm:pb-40 md:pb-32 pb-safe">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
           {/* Col 1: Brand */}
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 mb-4">
+
               {storeSettings.logoUrl ? (
                 <div className="h-9 max-w-[130px] flex items-center flex-shrink-0">
                   <img
@@ -29,8 +35,8 @@ const Footer = ({ onOpenSafetyModal }) => {
                   />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-[#d4a017] flex items-center justify-center flex-shrink-0">
-                  <Flame className="w-4 h-4 text-[#080c14] fill-current" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-300 to-gold-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-gold-500/20">
+                  <Flame className="w-4 h-4 text-[#060b15] fill-current" />
                 </div>
               )}
               <span className="text-base font-bold text-white leading-tight break-words">

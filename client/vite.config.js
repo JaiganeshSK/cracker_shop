@@ -29,6 +29,7 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-icons': ['lucide-react'],
           'vendor-utils': ['axios', 'sweetalert2'],
+          'vendor-three': ['three'],
         },
       },
     },

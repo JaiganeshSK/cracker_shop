@@ -100,32 +100,32 @@ const QuickOrderPage = () => {
     <div className={`max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-5 ${BOTTOM_BAR_PB}`}>
 
       {/* ── Page Header ─────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-slate-800 no-print">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-white/[0.06] no-print">
         <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="bg-[#0f172a] text-amber-400 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 animate-fade-up">
+            <span className="badge-gradient text-amber-400 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 fill-current" />
               {storeSettings?.shopName || 'Public Store'} • Sivakasi Wholesale
             </span>
-            <span className="text-xs text-rose-300 font-medium bg-[#1e141a] px-3 py-1 rounded-full border border-rose-500/30 shadow-sm">
+            <span className="text-xs text-rose-300 font-medium bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/25">
               Flat 80% Off MRP
             </span>
-            <span className="text-xs text-emerald-300 font-medium bg-[#0d1e17] px-3 py-1 rounded-full border border-emerald-500/30 hidden sm:inline-block shadow-sm">
+            <span className="text-xs text-emerald-300 font-medium bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/25 hidden sm:inline-block">
               100% Green Crackers
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          <h1 className="animate-fade-up-1 text-2xl sm:text-3xl font-bold text-white tracking-tight">
             Quick Order Sheet
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
+          <p className="animate-fade-up-2 text-xs sm:text-sm text-slate-400">
             {storeSettings?.tagline || 'Enter quantities for any item. Savings & total calculate in real time.'}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 no-print">
+        <div className="animate-fade-up-2 flex flex-wrap items-center gap-2 no-print">
           <Link
             to="/products"
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 hover:border-white/20 transition-all"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Visual View</span>
@@ -134,16 +134,16 @@ const QuickOrderPage = () => {
             <button
               type="button"
               onClick={() => setIsPriceListModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm badge-gradient text-amber-300 transition-all hover:opacity-90"
             >
               <FileText className="w-3.5 h-3.5 text-amber-400" />
-              <span>Price List (PDF)</span>
+              <span>Price List</span>
             </button>
           )}
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 hover:border-white/20 transition-all"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Print</span>
@@ -151,7 +151,7 @@ const QuickOrderPage = () => {
           <button
             type="button"
             onClick={() => setIsCartOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 transition-all active:scale-95"
+            className="btn-gold btn-ripple flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm"
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Cart ({totalItems})</span>
@@ -161,7 +161,7 @@ const QuickOrderPage = () => {
 
       {/* ── Wholesale Rate Card / Price List Notice Banner ─────────────── */}
       {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
-        <div className="bg-slate-900/70 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors no-print">
+        <div className="glow-card rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print animate-fade-up-3">
           <div className="flex items-start sm:items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 flex-shrink-0">
               <FileText className="w-5 h-5" />
@@ -171,7 +171,7 @@ const QuickOrderPage = () => {
                 <span className="text-sm sm:text-base font-bold text-white tracking-tight">
                   {storeSettings.priceListNoticeText || 'Wholesale Price List (PDF) Available'}
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-semibold uppercase tracking-wider badge-gradient text-amber-400 px-2 py-0.5 rounded">
                   PDF
                 </span>
               </div>
@@ -185,7 +185,7 @@ const QuickOrderPage = () => {
             <button
               type="button"
               onClick={() => setIsPriceListModalOpen(true)}
-              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm active:scale-95"
+              className="btn-gold btn-ripple flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm"
             >
               <Eye className="w-3.5 h-3.5" />
               <span>View Online</span>
@@ -194,7 +194,7 @@ const QuickOrderPage = () => {
             <a
               href={storeSettings.priceListUrl}
               download={storeSettings.priceListFileName || `${storeSettings?.shopName || 'Wholesale'}-Price-List.pdf`}
-              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-medium text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors active:scale-95"
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-medium text-xs sm:text-sm bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 hover:border-white/20 transition-all active:scale-95"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download PDF</span>
@@ -204,15 +204,15 @@ const QuickOrderPage = () => {
       )}
 
       {/* ── Search + Category Pills ──────────────────────────────────── */}
-      <div className="space-y-3 no-print">
-        <div className="relative">
+      <div className="space-y-3 no-print animate-fade-up-3">
+        <div className="relative max-w-lg">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
           <input
             type="text"
             placeholder="Filter by cracker name or category..."
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 bg-slate-900 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-colors max-w-lg"
+            className="input-glow w-full pl-10 pr-10 py-3 rounded-xl text-sm text-white placeholder-slate-600"
           />
           {filterText && (
             <button
@@ -225,14 +225,14 @@ const QuickOrderPage = () => {
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap flex-shrink-0">
+          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest whitespace-nowrap flex-shrink-0">
             Jump:
           </span>
           <button
             type="button"
             onClick={() => setFilterText('')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-colors ${
-              !filterText ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
+              !filterText ? 'pill-active' : 'pill-inactive'
             }`}
           >
             All
@@ -242,10 +242,10 @@ const QuickOrderPage = () => {
               key={cat}
               type="button"
               onClick={() => setFilterText(cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
                 filterText.toLowerCase() === cat.toLowerCase()
-                  ? 'bg-amber-500 text-slate-950'
-                  : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+                  ? 'pill-active'
+                  : 'pill-inactive'
               }`}
             >
               {cat}
@@ -285,15 +285,15 @@ const QuickOrderPage = () => {
             const catTotal = catItems.reduce((sum, p) => sum + getProductQty(p._id) * p.price, 0);
 
             return (
-              <div key={category} className="glass-panel rounded-2xl overflow-hidden border border-slate-800/60">
+              <div key={category} className="glow-card rounded-2xl overflow-hidden">
                 {/* Category Header */}
-                <div className="bg-slate-950/90 px-4 sm:px-5 py-3 border-b border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0" />
-                    <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider">
+                <div className="cat-header px-4 sm:px-5 py-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-gradient-to-br from-gold-300 to-gold-500 flex-shrink-0" />
+                    <h3 className="text-sm font-black text-gradient-gold uppercase tracking-wider">
                       {category}
                     </h3>
-                    <span className="text-[11px] text-slate-500 font-medium">
+                    <span className="text-[11px] text-slate-600 font-medium">
                       ({catItems.length})
                     </span>
                   </div>
@@ -307,7 +307,7 @@ const QuickOrderPage = () => {
                 {/* ── DESKTOP TABLE ──────────────────────────────────── */}
                 <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-left text-xs sm:text-sm">
-                    <thead className="bg-slate-900/60 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-800">
+                    <thead className="bg-[#060b15]/80 text-slate-600 text-[10px] uppercase tracking-wider border-b border-white/[0.05]">
                       <tr>
                         <th className="py-2.5 px-3 w-10 text-center">#</th>
                         <th className="py-2.5 px-3 w-14 no-print">Img</th>
@@ -319,6 +319,7 @@ const QuickOrderPage = () => {
                         <th className="py-2.5 px-3 text-right">Total</th>
                       </tr>
                     </thead>
+
                     <tbody className="divide-y divide-slate-800/50">
                       {catItems.map((product) => {
                         globalIndex++;
@@ -328,10 +329,11 @@ const QuickOrderPage = () => {
                         return (
                           <tr
                             key={product._id}
-                            className={`transition-colors ${
-                              currentQty > 0 ? 'bg-amber-500/5' : 'hover:bg-slate-800/30'
+                            className={`transition-all ${
+                              currentQty > 0 ? 'row-selected' : 'hover:bg-white/[0.02]'
                             } ${!product.inStock ? 'opacity-40' : ''}`}
                           >
+
                             <td className="py-3 px-3 text-center text-slate-500 font-mono text-xs">{globalIndex}</td>
                             <td className="py-2 px-3 no-print">
                               <img
