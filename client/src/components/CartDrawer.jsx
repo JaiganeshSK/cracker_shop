@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, MessageSquare, AlertCircle, Package } from 'lucide-react';
+import { WhatsAppIcon } from './icons/BrandIcons';
 import { useCart } from '../context/CartContext';
 
 const CartDrawer = () => {
@@ -226,7 +227,7 @@ const CartDrawer = () => {
                   disabled={!isMinOrderMet}
                   className="w-full py-2.5 rounded-lg font-semibold text-xs bg-emerald-600/12 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 flex items-center justify-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <MessageSquare className="w-3.5 h-3.5" />
+                  <WhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
                   Order via WhatsApp
                 </button>
               </div>

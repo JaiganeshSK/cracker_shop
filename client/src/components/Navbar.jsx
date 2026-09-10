@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Flame, ShoppingBag, Menu, X, ShieldAlert, PhoneCall, ListOrdered, LayoutGrid, FileText, Download, Lock } from 'lucide-react';
+import { WhatsAppIcon } from './icons/BrandIcons';
 import { useCart } from '../context/CartContext';
 
 const Navbar = ({ onOpenSafetyModal }) => {
@@ -123,7 +124,7 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 rel="noreferrer"
                 className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 transition-colors"
               >
-                <PhoneCall className="w-3.5 h-3.5" />
+                <WhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
                 <span>WhatsApp</span>
               </a>
 
@@ -240,9 +241,9 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 href={`https://wa.me/${String(storeSettings?.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${storeSettings?.shopName || 'Store'}, I want to place an order`)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2.5 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
+                className="flex items-center justify-center gap-2.5 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors shadow-lg shadow-emerald-950/40"
               >
-                <PhoneCall className="w-4 h-4" />
+                <WhatsAppIcon className="w-4 h-4 fill-white" />
                 <span>Chat on WhatsApp · {storeSettings.phone}</span>
               </a>
             </div>

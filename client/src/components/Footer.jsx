@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, MapPin, Phone, MessageSquare, Mail, ShieldCheck, Lock, ListOrdered, LayoutGrid, Instagram } from 'lucide-react';
+import { WhatsAppIcon } from './icons/BrandIcons';
 import { useCart } from '../context/CartContext';
 
 const Footer = ({ onOpenSafetyModal }) => {
@@ -46,7 +47,7 @@ const Footer = ({ onOpenSafetyModal }) => {
               rel="noreferrer"
               className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-lg hover:bg-emerald-500/10 transition-colors"
             >
-              <MessageSquare className="w-3.5 h-3.5" />
+              <WhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
               Chat on WhatsApp
             </a>
           </div>
@@ -98,7 +99,7 @@ const Footer = ({ onOpenSafetyModal }) => {
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
-                <MessageSquare className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <WhatsAppIcon className="w-4 h-4 fill-emerald-400 flex-shrink-0" />
                 <a
                   href={`https://wa.me/${storeSettings.whatsapp}`}
                   target="_blank"
