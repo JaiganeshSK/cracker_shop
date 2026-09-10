@@ -209,6 +209,14 @@ const AdminLayout = () => {
               <LogOut className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Powered by ASMI TECH */}
+          <div className="pt-2.5 border-t border-slate-800/40 flex items-center justify-center gap-2 text-[10px] text-slate-400">
+            <span>Powered by</span>
+            <div className="inline-flex items-center bg-white px-1.5 py-0.5 rounded shadow-xs" title="ASMI TECH - Ideas | Technology | Growth">
+              <img src="/asmi-tech-logo.png" alt="ASMI TECH" className="h-3 w-auto object-contain" />
+            </div>
+          </div>
         </div>
       </aside>
 

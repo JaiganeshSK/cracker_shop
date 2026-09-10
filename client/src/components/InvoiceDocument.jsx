@@ -357,8 +357,12 @@ const InvoiceDocument = ({ order, storeSettings, invoiceRef }) => {
       </div>
 
       {/* ── BOTTOM NOTICE ──────────────────────────────────────── */}
-      <div className="mt-4 pt-2 border-t border-slate-200 text-center text-[9px] text-slate-500 font-medium">
-        Thank you for celebrating with {shopName}! Wishing you and your family a sparkling and prosperous festive season! &bull; This is a computer generated invoice.
+      <div className="mt-4 pt-2 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9px] text-slate-500 font-medium">
+        <span>Thank you for celebrating with {shopName}! &bull; Computer generated invoice.</span>
+        <div className="flex items-center gap-1.5">
+          <span>Powered by</span>
+          <img src="/asmi-tech-logo.png" alt="ASMI TECH" className="h-3 w-auto object-contain inline-block" />
+        </div>
       </div>
     </div>
   );

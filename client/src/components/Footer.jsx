@@ -149,8 +149,21 @@ const Footer = ({ onOpenSafetyModal }) => {
         </div>
 
         {/* Bottom Bar — Clearly visible text, not cut off */}
-        <div className="pt-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
+        <div className="pt-6 border-t border-white/[0.08] flex flex-col md:flex-row items-center justify-between text-xs text-slate-400 gap-4">
           <p>© {new Date().getFullYear()} {storeSettings.shopName || 'Public Store'}. All rights reserved.</p>
+
+          {/* Powered by ASMI TECH Logo */}
+          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800/80 shadow-inner">
+            <span className="text-[11px] text-slate-400 font-medium tracking-wide">Powered by</span>
+            <div className="inline-flex items-center bg-white px-2.5 py-1 rounded-md shadow-sm hover:opacity-95 transition-all" title="ASMI TECH - Ideas | Technology | Growth">
+              <img
+                src="/asmi-tech-logo.png"
+                alt="ASMI TECH - Ideas | Technology | Growth"
+                className="h-5 sm:h-5.5 w-auto object-contain"
+              />
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
             <span>Sivakasi Factory Direct</span>
             <span className="text-slate-600">·</span>

@@ -477,8 +477,11 @@ export function generateInvoiceHtml(order, storeSettings) {
         </div>
 
         <!-- Footer Note -->
-        <div class="footer-note">
-          Thank you for celebrating with ${shopName}! Wishing you and your family a sparkling and safe festive season! &bull; Computer generated commercial invoice.
+        <div class="footer-note" style="display: flex; justify-content: space-between; align-items: center; font-size: 8px;">
+          <span>Thank you for celebrating with ${shopName}! &bull; Computer generated commercial invoice.</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; color: #64748b;">
+            Powered by <img src="/asmi-tech-logo.png" alt="ASMI TECH" style="height: 10px; vertical-align: middle;" />
+          </span>
         </div>
       </div>
     </body>

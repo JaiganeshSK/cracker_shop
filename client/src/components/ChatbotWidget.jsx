@@ -198,8 +198,14 @@ const ChatbotWidget = () => {
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2 bg-slate-950/80 border-t border-slate-800 text-center text-[10px] text-slate-500">
-            Direct customer service • Powered by {shopName}
+          <div className="px-4 py-2 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+            <span>Direct Customer Support</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 text-[9px]">Powered by</span>
+              <div className="inline-flex items-center bg-white px-1.5 py-0.5 rounded shadow-xs" title="ASMI TECH - Ideas | Technology | Growth">
+                <img src="/asmi-tech-logo.png" alt="ASMI TECH" className="h-3 w-auto object-contain" />
+              </div>
+            </div>
           </div>
         </div>
       )}

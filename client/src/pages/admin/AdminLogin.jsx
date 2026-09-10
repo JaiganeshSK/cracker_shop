@@ -96,6 +96,14 @@ const AdminLogin = () => {
             ← Return to Customer Storefront
           </Link>
         </div>
+
+        {/* Powered by ASMI TECH */}
+        <div className="pt-6 border-t border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <span className="text-[11px] text-slate-400 font-medium">Powered by</span>
+          <div className="inline-flex items-center bg-white px-2 py-0.5 rounded shadow-sm hover:opacity-95 transition-opacity" title="ASMI TECH - Ideas | Technology | Growth">
+            <img src="/asmi-tech-logo.png" alt="ASMI TECH" className="h-4 w-auto object-contain" />
+          </div>
+        </div>
       </div>
     </div>
   );
