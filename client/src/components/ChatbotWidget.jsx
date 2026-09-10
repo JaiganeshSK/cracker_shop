@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, ArrowRight, ExternalLink, FileText, Instagram } from 'lucide-react';
+import { X, ArrowRight, ExternalLink, FileText, Instagram, Headset } from 'lucide-react';
 import { WhatsAppIcon } from './icons/BrandIcons';
 import { useCart } from '../context/CartContext';
 
@@ -62,8 +62,8 @@ const ChatbotWidget = () => {
           {/* Header */}
           <div className="bg-slate-950 px-4 py-3.5 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 shadow-sm">
-                <WhatsAppIcon className="w-5 h-5 fill-emerald-400" />
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0 shadow-sm">
+                <Headset className="w-5 h-5 text-amber-400" />
               </div>
               <div>
                 <div className="text-sm font-bold text-white tracking-tight leading-tight">
@@ -71,7 +71,7 @@ const ChatbotWidget = () => {
                 </div>
                 <div className="text-[11px] text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Online • Quick Response</span>
+                  <span>Online • Quick Assistance</span>
                 </div>
               </div>
             </div>
@@ -196,29 +196,29 @@ const ChatbotWidget = () => {
         </div>
       )}
 
-      {/* ── Single Floating Launcher Button (WhatsApp for Chat / Customer Support) ── */}
+      {/* ── Single Floating Launcher Button (Customer Support) ── */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`group relative w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-200 active:scale-95 hover:scale-105 ${
           isOpen
             ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
-            : 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-950/60 border border-emerald-400/50'
+            : 'bg-gradient-to-tr from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-amber-950/60 border border-amber-300/60'
         }`}
-        title={isOpen ? 'Close' : 'Chat on WhatsApp • Customer Support'}
-        aria-label={isOpen ? 'Close' : 'Chat on WhatsApp • Customer Support'}
+        title={isOpen ? 'Close customer support' : 'Customer Support (WhatsApp & Instagram)'}
+        aria-label={isOpen ? 'Close customer support' : 'Customer Support (WhatsApp & Instagram)'}
       >
         {isOpen ? (
           <X className="w-5 h-5" />
         ) : (
           <>
-            <WhatsAppIcon className="w-6 h-6 fill-white" />
+            <Headset className="w-6 h-6 text-slate-950 stroke-[2.2]" />
             <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-white border-2 border-emerald-600" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950" />
             </span>
-            <span className="hidden sm:block absolute right-full mr-3 px-2.5 py-1 rounded-lg bg-slate-900/95 border border-slate-700/80 text-[11px] font-semibold text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
-              Chat on WhatsApp
+            <span className="hidden sm:block absolute right-full mr-3 px-2.5 py-1 rounded-lg bg-slate-900/95 border border-slate-700/80 text-[11px] font-semibold text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
+              Customer Support
             </span>
           </>
         )}
