@@ -196,24 +196,30 @@ const ChatbotWidget = () => {
         </div>
       )}
 
-      {/* ── Single Floating Launcher Button ──────────────────────────────── */}
+      {/* ── Single Floating Launcher Button (WhatsApp for Chat / Customer Support) ── */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-200 active:scale-95 hover:scale-105 ${
+        className={`group relative w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-200 active:scale-95 hover:scale-105 ${
           isOpen
             ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
             : 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-950/60 border border-emerald-400/50'
         }`}
-        title={isOpen ? 'Close contact menu' : 'Connect with us on WhatsApp or Instagram'}
-        aria-label={isOpen ? 'Close contact menu' : 'Connect with us on WhatsApp or Instagram'}
+        title={isOpen ? 'Close' : 'Chat on WhatsApp • Customer Support'}
+        aria-label={isOpen ? 'Close' : 'Chat on WhatsApp • Customer Support'}
       >
         {isOpen ? (
           <X className="w-5 h-5" />
         ) : (
           <>
             <WhatsAppIcon className="w-6 h-6 fill-white" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-emerald-600 animate-pulse" />
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-white border-2 border-emerald-600" />
+            </span>
+            <span className="hidden sm:block absolute right-full mr-3 px-2.5 py-1 rounded-lg bg-slate-900/95 border border-slate-700/80 text-[11px] font-semibold text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
+              Chat on WhatsApp
+            </span>
           </>
         )}
       </button>
