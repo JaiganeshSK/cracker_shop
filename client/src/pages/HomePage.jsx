@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Zap, ShieldCheck, Truck, Percent, ArrowRight, Flame,
-  CheckCircle, MessageSquare, Star, ListOrdered, Factory, Leaf,
+  CheckCircle, MessageSquare, Star, ListOrdered, Factory, Leaf, FileText,
+  Eye, Download,
 } from 'lucide-react';
 import api from '../services/api';
 import ProductCard from '../components/ProductCard';
+import { useCart } from '../context/CartContext';
 
 /* Category icon mapping — using Lucide icons instead of emojis */
 const CAT_ICON_MAP = {
@@ -46,6 +48,7 @@ const ICON_COLOR = {
 };
 
 const HomePage = () => {
+  const { storeSettings, setIsPriceListModalOpen } = useCart();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +82,7 @@ const HomePage = () => {
             {/* Pre-badge */}
             <div className="inline-flex items-center gap-2.5 bg-[#0f172a] border border-[#d4a017]/40 px-4 py-1.5 rounded-full text-xs font-semibold text-amber-300 mb-7 tracking-wide shadow-md">
               <Flame className="w-3.5 h-3.5 text-[#d4a017] fill-current" />
-              <span>Diwali 2026 Pre-Booking · Sivakasi Factory Direct</span>
+              <span>{storeSettings?.shopName || 'Public Store'} · Sivakasi Factory Direct</span>
               <span className="bg-[#d4a017] text-[#080c14] text-[10px] px-2.5 py-0.5 rounded-full font-black shadow-sm">
                 80% OFF
               </span>
@@ -87,14 +90,14 @@ const HomePage = () => {
 
             {/* Headline */}
             <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-black text-white tracking-tight leading-[1.08] mb-5">
-              Light Up Your
+              {storeSettings?.shopName || 'Public Store'}
               <br />
               <span className="text-gold-400">Celebrations</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-slate-400 text-sm sm:text-base max-w-lg mx-auto mb-9 leading-relaxed">
-              Authentic 100% Green Certified fireworks from Sivakasi. Wholesale factory prices, maximum discounts, safe delivery to your doorstep.
+              {storeSettings?.tagline || 'Authentic 100% Green Certified fireworks from Sivakasi. Wholesale factory prices, maximum discounts, safe delivery to your doorstep.'}
             </p>
 
             {/* CTA Buttons */}
@@ -106,6 +109,16 @@ const HomePage = () => {
                 <Zap className="w-4 h-4" />
                 Quick Order · Price List
               </Link>
+              {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
+                <button
+                  type="button"
+                  onClick={() => setIsPriceListModalOpen(true)}
+                  className="btn-ghost w-full xs:w-auto px-6 py-3.5 text-sm flex items-center justify-center gap-2 text-amber-400 border-amber-500/30 hover:bg-amber-500/10 transition-colors"
+                >
+                  <FileText className="w-4 h-4 text-amber-400" />
+                  <span>Price List (PDF)</span>
+                </button>
+              )}
               <Link
                 to="/products"
                 className="btn-ghost w-full xs:w-auto px-8 py-3.5 text-sm"
@@ -148,6 +161,53 @@ const HomePage = () => {
           ))}
         </div>
       </section>
+
+      {/* ── WHOLESALE RATE CARD BANNER ────────────────────────────────────── */}
+      {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-900/60 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 transition-colors shadow-lg">
+            <div className="flex items-center gap-5">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+                <FileText className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                    {storeSettings.priceListNoticeText || 'Wholesale Price List (PDF)'}
+                  </h3>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded">
+                    PDF
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
+                  Official {storeSettings?.shopName || 'Public Store'} catalog with product codes, case packing specifications, and factory wholesale rates.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsPriceListModalOpen(true)}
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm active:scale-95"
+              >
+                <Eye className="w-4 h-4" />
+                <span>View Online</span>
+              </button>
+
+              <a
+                href={storeSettings.priceListUrl}
+                download={storeSettings.priceListFileName || `${storeSettings?.shopName || 'Wholesale'}-Price-List.pdf`}
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors active:scale-95"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── 3. CATEGORIES ────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

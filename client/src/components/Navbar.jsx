@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Flame, ShoppingBag, Menu, X, ShieldAlert, PhoneCall, ListOrdered, LayoutGrid } from 'lucide-react';
+import { Flame, ShoppingBag, Menu, X, ShieldAlert, PhoneCall, ListOrdered, LayoutGrid, FileText, Download, Lock } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Navbar = ({ onOpenSafetyModal }) => {
-  const { totalItems, subtotal, setIsCartOpen, storeSettings } = useCart();
+  const { totalItems, subtotal, setIsCartOpen, storeSettings, setIsPriceListModalOpen } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   const navLinks = [
     { to: '/',          label: 'Quick Order', icon: ListOrdered, match: ['/', '/quick-order'] },
     { to: '/products',  label: 'Catalog',     icon: LayoutGrid,  match: ['/products', '/catalog'] },
-    { to: '/track-order', label: 'Track Order', icon: null,      match: ['/track-order'] },
   ];
 
   const isLinkActive = (paths) => paths.includes(location.pathname);
@@ -64,11 +63,11 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 </div>
               )}
               <div className="min-w-0">
-                <div className="font-bold text-sm sm:text-[15px] tracking-tight text-white leading-tight">
-                  {storeSettings.shopName || 'Sri Krishna Fireworks'}
+                <div className="font-extrabold text-sm sm:text-[15px] tracking-tight text-white leading-tight">
+                  {storeSettings.shopName || 'Public Store'}
                 </div>
-                <div className="text-[10px] text-gold-400/80 font-medium tracking-widest uppercase leading-tight">
-                  Sivakasi Direct
+                <div className="text-[10px] text-gold-400/90 font-semibold tracking-wider uppercase leading-tight truncate max-w-[160px] sm:max-w-[220px]">
+                  {storeSettings.tagline ? storeSettings.tagline.slice(0, 32) : 'Sivakasi Direct'}
                 </div>
               </div>
             </Link>
@@ -102,13 +101,24 @@ const Navbar = ({ onOpenSafetyModal }) => {
                   <span>Safety</span>
                 </button>
               )}
+              {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
+                <button
+                  type="button"
+                  onClick={() => setIsPriceListModalOpen(true)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-all flex items-center gap-1.5 shadow-sm"
+                  title="Wholesale Price List (PDF)"
+                >
+                  <FileText className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Price List (PDF)</span>
+                </button>
+              )}
             </nav>
 
             {/* Right Actions */}
             <div className="flex items-center gap-2">
               {/* WhatsApp — desktop only */}
               <a
-                href={`https://wa.me/${storeSettings.whatsapp}?text=Hello%20Sri%20Krishna%20Fireworks,%20I%20want%20to%20place%20an%20order`}
+                href={`https://wa.me/${String(storeSettings?.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${storeSettings?.shopName || 'Store'}, I want to place an order`)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 transition-colors"
@@ -116,6 +126,16 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 <PhoneCall className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
               </a>
+
+              {/* Admin Portal — Top of the screen */}
+              <Link
+                to="/admin/login"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 hover:bg-white/5 transition-all"
+                title="Admin Portal Login"
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                <span className="hidden sm:inline">Admin</span>
+              </Link>
 
               {/* Cart Button */}
               <button
@@ -173,14 +193,36 @@ const Navbar = ({ onOpenSafetyModal }) => {
               <span>Products Catalog</span>
             </Link>
 
-            <Link
-              to="/track-order"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/5 transition-colors"
-            >
-              <span className="w-4 h-4 text-slate-400 flex-shrink-0 text-[13px] font-bold">📦</span>
-              <span>Track My Order</span>
-            </Link>
+            {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
+              <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 my-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white">Wholesale Price List (PDF)</div>
+                    <div className="text-[11px] text-slate-400">Official factory rate card</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setMobileMenuOpen(false); setIsPriceListModalOpen(true); }}
+                    className="py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold rounded-lg text-center transition-colors"
+                  >
+                    View Online
+                  </button>
+                  <a
+                    href={storeSettings.priceListUrl}
+                    download={storeSettings.priceListFileName || `${storeSettings?.shopName || 'Wholesale'}-Price-List.pdf`}
+                    className="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg text-center transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download</span>
+                  </a>
+                </div>
+              </div>
+            )}
 
             {onOpenSafetyModal && (
               <button
@@ -195,7 +237,7 @@ const Navbar = ({ onOpenSafetyModal }) => {
             {/* WhatsApp CTA */}
             <div className="pt-2">
               <a
-                href={`https://wa.me/${storeSettings.whatsapp}?text=Hello%20Sri%20Krishna%20Fireworks,%20I%20want%20to%20place%20an%20order`}
+                href={`https://wa.me/${String(storeSettings?.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${storeSettings?.shopName || 'Store'}, I want to place an order`)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-center gap-2.5 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
@@ -203,6 +245,18 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 <PhoneCall className="w-4 h-4" />
                 <span>Chat on WhatsApp · {storeSettings.phone}</span>
               </a>
+            </div>
+
+            {/* Admin Portal Login — Mobile Drawer */}
+            <div className="pt-2 border-t border-white/[0.08]">
+              <Link
+                to="/admin/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <Lock className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <span>Admin Portal Login</span>
+              </Link>
             </div>
           </div>
         )}

@@ -13,13 +13,13 @@ const InvoiceDocument = ({ order, storeSettings, invoiceRef }) => {
       })
     : new Date().toLocaleDateString('en-IN');
 
-  const shopName = storeSettings?.shopName || 'SRI KRISHNA FIREWORKS SIVAKASI';
+  const shopName = storeSettings?.shopName || 'FIREWORKS STORE SIVAKASI';
   const tagline = storeSettings?.tagline || 'Direct Factory Outlet • 100% Certified Green Crackers';
-  const address = storeSettings?.address || 'Shop No. 4, Factory By-Pass Road, Sivakasi, Tamil Nadu - 626123';
-  const phone = storeSettings?.phone || '+91 94431 23456';
-  const whatsapp = storeSettings?.whatsapp || '+91 94431 23456';
-  const email = storeSettings?.email || 'sales@srikrishnafireworks.com';
-  const upiId = storeSettings?.upiId || 'srikrishnafireworks@upi';
+  const address = storeSettings?.address || 'Sivakasi, Tamil Nadu - 626123';
+  const phone = storeSettings?.phone || '';
+  const whatsapp = storeSettings?.whatsapp || '';
+  const email = storeSettings?.email || '';
+  const upiId = storeSettings?.upiId || '';
 
   return (
     <div
@@ -298,16 +298,14 @@ const InvoiceDocument = ({ order, storeSettings, invoiceRef }) => {
                   ₹{order.subtotal ? order.subtotal.toLocaleString('en-IN') : order.totalAmount?.toLocaleString('en-IN')}
                 </td>
               </tr>
-              <tr className="border-b border-slate-200 bg-white">
-                <td className="py-1.5 px-3 text-slate-600">Packaging &amp; Freight</td>
-                <td className="py-1.5 px-3 text-right font-semibold">
-                  {order.deliveryFee === 0 ? (
-                    <span className="text-emerald-700 font-bold uppercase text-[10px]">FREE</span>
-                  ) : (
-                    `₹${order.deliveryFee}`
-                  )}
-                </td>
-              </tr>
+              {order.deliveryFee > 0 && (
+                <tr className="border-b border-slate-200 bg-white">
+                  <td className="py-1.5 px-3 text-slate-600">Packaging &amp; Freight</td>
+                  <td className="py-1.5 px-3 text-right font-semibold">
+                    ₹{order.deliveryFee}
+                  </td>
+                </tr>
+              )}
               <tr className="bg-slate-900 text-white font-black text-sm">
                 <td className="py-2.5 px-3">NET PAYABLE AMOUNT</td>
                 <td className="py-2.5 px-3 text-right text-base font-black tracking-tight">

@@ -142,9 +142,103 @@ const deleteImageFile = async (fileUrl) => {
   }
 };
 
+/**
+ * Uploads a PDF document to Vercel Blob or falls back to local disk
+ * @param {Buffer} buffer - PDF buffer
+ * @param {string} [originalFilename='rate-card.pdf'] - original filename
+ * @param {string} [folder='documents'] - blob subfolder
+ * @returns {Promise<{ url: string, filename: string, originalName: string, size: number, mimeType: string, storage: string, uploadedAt: Date }>}
+ */
+const uploadPdfToBlob = async (buffer, originalFilename = 'rate-card.pdf', folder = 'documents') => {
+  const filename = generateDateTimeFilename('pdf');
+  const blobPath = folder ? `${folder}/${filename}` : filename;
+
+  const rawToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const token = rawToken ? rawToken.trim().replace(/^["']|["'];?$/g, '').replace(/;$/, '').trim() : null;
+
+  if (token) {
+    try {
+      const blob = await put(blobPath, buffer, {
+        access: 'public',
+        token,
+        contentType: 'application/pdf',
+      });
+
+      return {
+        url: blob.url,
+        filename,
+        originalName: originalFilename,
+        pathname: blob.pathname,
+        size: buffer.length,
+        mimeType: 'application/pdf',
+        storage: 'vercel-blob',
+        uploadedAt: new Date(),
+      };
+    } catch (blobErr) {
+      console.warn(`[Vercel Blob] PDF Upload failed (${blobErr.message}). Falling back to local disk storage.`);
+    }
+  }
+
+  // Fallback to local disk
+  const uploadDir = path.join(__dirname, '../uploads/documents');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const outputPath = path.join(uploadDir, filename);
+  await fs.promises.writeFile(outputPath, buffer);
+
+  return {
+    url: `/uploads/documents/${filename}`,
+    filename,
+    originalName: originalFilename,
+    pathname: `/uploads/documents/${filename}`,
+    size: buffer.length,
+    mimeType: 'application/pdf',
+    storage: 'local',
+    uploadedAt: new Date(),
+  };
+};
+
+/**
+ * Safely removes a PDF file from Vercel Blob or local disk
+ * @param {string} fileUrl 
+ */
+const deletePdfFile = async (fileUrl) => {
+  if (!fileUrl) return;
+
+  const rawToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const token = rawToken ? rawToken.trim().replace(/^["']|["'];?$/g, '').replace(/;$/, '').trim() : null;
+
+  if (fileUrl.includes('vercel-storage.com') || fileUrl.includes('blob.vercel-storage.com')) {
+    try {
+      if (token) {
+        await del(fileUrl, { token });
+        console.log(`[Vercel Blob] Deleted PDF: ${fileUrl}`);
+      }
+    } catch (err) {
+      console.error(`[Vercel Blob] Error deleting blob ${fileUrl}:`, err.message);
+    }
+    return;
+  }
+
+  if (fileUrl.startsWith('/uploads/documents/')) {
+    const filename = path.basename(fileUrl);
+    const filePath = path.join(__dirname, '../uploads/documents', filename);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlink(filePath, (err) => {
+        if (err) console.error(`Error deleting local PDF ${filePath}:`, err.message);
+      });
+    }
+  }
+};
+
 module.exports = {
   uploadImageToBlob,
   convertToWebP,
   deleteImageFile,
+  uploadPdfToBlob,
+  deletePdfFile,
   generateDateTimeFilename,
 };

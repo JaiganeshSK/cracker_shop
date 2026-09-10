@@ -1,8 +1,65 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, MessageSquare } from 'lucide-react';
+import {
+  ArrowLeft,
+  AlertCircle,
+  MessageSquare,
+  ShieldCheck,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Home,
+  Navigation,
+  Building2,
+  Calendar,
+  Truck,
+  Sparkles,
+  ChevronRight,
+  CheckCircle2,
+} from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
+
+const INDIAN_STATES = [
+  'Tamil Nadu',
+  'Andhra Pradesh',
+  'Karnataka',
+  'Kerala',
+  'Telangana',
+  'Maharashtra',
+  'Gujarat',
+  'Andaman and Nicobar Islands',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chandigarh',
+  'Chhattisgarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Goa',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jammu and Kashmir',
+  'Jharkhand',
+  'Ladakh',
+  'Lakshadweep',
+  'Madhya Pradesh',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Puducherry',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Other State / Location',
+];
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -40,6 +97,14 @@ const CheckoutPage = () => {
   const paymentMethod = 'WhatsApp Order';
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const handleCopyPhoneToWhatsApp = () => {
+    if (formData.phone) {
+      setFormData((prev) => ({ ...prev, whatsapp: prev.phone }));
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -118,7 +183,8 @@ const CheckoutPage = () => {
 
         // Generate complete WhatsApp receipt with the new WhatsApp Order Number
         const msg = generateWhatsAppMessage(formData, createdOrder.orderId);
-        const shopWhatsApp = storeSettings?.whatsapp || '916369050467';
+        const rawPhone = storeSettings?.whatsapp || '916369050467';
+        const shopWhatsApp = String(rawPhone).replace(/\D/g, '');
         const waUrl = `https://wa.me/${shopWhatsApp}?text=${msg}`;
 
         if (isMobile) {
@@ -174,194 +240,402 @@ const CheckoutPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pb-24">
-      <button
-        onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Back to Shopping</span>
-      </button>
+      {/* Top Navigation & Breadcrumbs */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-amber-400 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Shopping</span>
+        </button>
+
+        {/* Visual Step Indicator */}
+        <div className="flex items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={() => navigate('/quick-order')}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors"
+          >
+            <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-[10px]">
+              ✓
+            </span>
+            <span className="hidden sm:inline">1. Cart</span>
+          </button>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+          <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+            <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black flex items-center justify-center text-[10px]">
+              2
+            </span>
+            <span>Delivery &amp; Contact</span>
+          </div>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+          <div className="flex items-center gap-1.5 text-slate-500">
+            <span className="w-5 h-5 rounded-full bg-slate-800 text-slate-500 font-bold flex items-center justify-center text-[10px]">
+              3
+            </span>
+            <span className="hidden sm:inline">WhatsApp Order</span>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT: Shipping Form */}
-        <div className="lg:col-span-7 glass-panel p-6 sm:p-8 rounded-2xl space-y-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white">Delivery & Contact Information</h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Provide accurate shipping details for transport delivery and consignment tracking.
-            </p>
+        <div className="lg:col-span-7 space-y-6">
+          {/* Header Card */}
+          <div className="glass-panel p-6 sm:p-7 rounded-2xl border border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-bold tracking-wide uppercase mb-2">
+                <Sparkles className="w-3 h-3" />
+                <span>Direct Sivakasi Factory Consignment</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Delivery &amp; Contact Details</h1>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Please complete your contact and shipping destination details for prompt consignment packing &amp; parcel transport booking.
+              </p>
+            </div>
           </div>
 
+          {/* Min Order Alert Banner */}
+          {!isMinOrderMet && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-xs text-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-amber-950/20">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0 text-amber-400">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-white">Minimum Order Requirement: ₹{minOrderValue.toLocaleString()}</div>
+                  <p className="text-amber-200/80 mt-0.5">Please add crackers worth ₹{minOrderRemaining.toLocaleString()} more to place your order.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/quick-order')}
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex-shrink-0 transition-all active:scale-95 shadow-md shadow-amber-500/20 self-start sm:self-auto cursor-pointer"
+              >
+                Add Crackers
+              </button>
+            </div>
+          )}
+
+          {/* Error Message */}
           {errorMsg && (
-            <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3.5 text-xs text-rose-300 flex items-start gap-2.5">
+            <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-xs text-rose-300 flex items-start gap-3">
               <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmitOrder} className="space-y-4 text-xs sm:text-sm">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  Full Name <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  placeholder="e.g. Ramesh Kumar"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
+          <form onSubmit={handleSubmitOrder} className="space-y-6">
+            {/* Section 1: Contact Details */}
+            <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
+                  01
+                </div>
+                <div>
+                  <h2 className="text-sm sm:text-base font-bold text-white">Contact &amp; Communication</h2>
+                  <p className="text-[11px] text-slate-400">Who should we contact for order verification and consignment updates?</p>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  Mobile Number <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  placeholder="e.g. 9876543210"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1.5">
+                    Recipient Full Name <span className="text-rose-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      placeholder="e.g. Ramesh Kumar"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                    />
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  WhatsApp Number (For Order Updates)
-                </label>
-                <input
-                  type="tel"
-                  name="whatsapp"
-                  placeholder="Same as mobile or WhatsApp number"
-                  value={formData.whatsapp}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
+                {/* Phone */}
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1.5">
+                    Mobile Number <span className="text-rose-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <Phone className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="tel"
+                      name="phone"
+                      required
+                      maxLength={10}
+                      placeholder="10-digit mobile number"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                    />
+                  </div>
+                </div>
 
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Email (Optional)</label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="name@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-            </div>
+                {/* WhatsApp */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-slate-300 font-semibold">
+                      WhatsApp Number
+                    </label>
+                    {formData.phone && formData.whatsapp !== formData.phone && (
+                      <button
+                        type="button"
+                        onClick={handleCopyPhoneToWhatsApp}
+                        className="text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/20 transition-colors cursor-pointer"
+                      >
+                        Same as mobile
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-400">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="tel"
+                      name="whatsapp"
+                      placeholder="WhatsApp for order updates"
+                      value={formData.whatsapp}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 transition-all text-xs sm:text-sm"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-slate-300 font-semibold mb-1">
-                Full Street / Door Delivery Address <span className="text-rose-400">*</span>
-              </label>
-              <textarea
-                name="address"
-                required
-                rows={3}
-                placeholder="House / Door No, Street, Building, Area..."
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 resize-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  City / Town <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  required
-                  placeholder="e.g. Madurai"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">District</label>
-                <input
-                  type="text"
-                  name="district"
-                  placeholder="e.g. Madurai"
-                  value={formData.district}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  Pincode <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="pincode"
-                  required
-                  placeholder="6 digits PIN"
-                  value={formData.pincode}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
+                {/* Email */}
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1.5">
+                    Email Address <span className="text-slate-500 font-normal">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="name@example.com (For invoice)"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">State</label>
-                <select
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500"
-                >
-                  <option value="Tamil Nadu">Tamil Nadu</option>
-                  <option value="Karnataka">Karnataka</option>
-                  <option value="Andhra Pradesh">Andhra Pradesh</option>
-                  <option value="Telangana">Telangana</option>
-                  <option value="Kerala">Kerala</option>
-                  <option value="Maharashtra">Maharashtra</option>
-                  <option value="Gujarat">Gujarat</option>
-                  <option value="Other State">Other State</option>
-                </select>
+            {/* Section 2: Delivery Destination */}
+            <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
+                  02
+                </div>
+                <div>
+                  <h2 className="text-sm sm:text-base font-bold text-white">Consignment Delivery Address</h2>
+                  <p className="text-[11px] text-slate-400">Where should we deliver your festive cracker parcel?</p>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  Preferred Delivery Date
-                </label>
-                <input
-                  type="date"
-                  name="preferredDeliveryDate"
-                  value={formData.preferredDeliveryDate}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500"
-                />
+              <div className="space-y-4 text-xs">
+                {/* Street Address */}
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1.5">
+                    Door No. / Building / Street Address <span className="text-rose-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute top-3 left-3.5 pointer-events-none text-slate-500">
+                      <Home className="w-4 h-4" />
+                    </div>
+                    <textarea
+                      name="address"
+                      required
+                      rows={2}
+                      placeholder="House / Door No., Building Name, Street / Road, Area / Colony..."
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all resize-none text-xs sm:text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Landmark */}
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1.5">
+                    Landmark / Locality <span className="text-slate-500 font-normal">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      name="landmark"
+                      placeholder="e.g. Near Old Bus Stand, Opp. Shiva Temple, Main Road"
+                      value={formData.landmark}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* City, District, Pincode 3-Col Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* City */}
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1.5">
+                      City / Town <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <Building2 className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        name="city"
+                        required
+                        placeholder="e.g. Madurai"
+                        value={formData.city}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* District */}
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1.5">
+                      District
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <MapPin className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        name="district"
+                        placeholder="e.g. Madurai"
+                        value={formData.district}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Pincode */}
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1.5">
+                      Pincode <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <Navigation className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        name="pincode"
+                        required
+                        maxLength={6}
+                        placeholder="6 digits PIN"
+                        value={formData.pincode}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* State */}
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1.5">
+                    Delivery State
+                  </label>
+                  <select
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm cursor-pointer"
+                  >
+                    {INDIAN_STATES.map((stateName) => (
+                      <option key={stateName} value={stateName} className="bg-slate-900 text-white">
+                        {stateName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="pt-6 border-t border-slate-800 space-y-3">
+            {/* Section 3: Delivery Preferences */}
+            <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
+                  03
+                </div>
+                <div>
+                  <h2 className="text-sm sm:text-base font-bold text-white">Delivery Schedule &amp; Logistics</h2>
+                  <p className="text-[11px] text-slate-400">Specify when you would like this consignment to arrive</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1.5">
+                    Preferred Delivery Date <span className="text-slate-500 font-normal">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="date"
+                      name="preferredDeliveryDate"
+                      min={todayStr}
+                      value={formData.preferredDeliveryDate}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all text-xs sm:text-sm"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Leave empty for earliest priority transport dispatch.
+                  </p>
+                </div>
+
+                {/* Safe Road Transport Note */}
+                <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 text-emerald-400 mt-0.5">
+                    <Truck className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="text-[11px] text-slate-400 leading-relaxed">
+                    <strong className="text-slate-200">Sivakasi Transport Dispatch:</strong> All parcels are securely packed with heavy-duty moisture barrier and booked through authorized parcel transport services. Consignment LR receipt will be forwarded on WhatsApp.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Submission CTA */}
+            <div className="space-y-3 pt-2">
               <button
                 type="submit"
                 disabled={submitting || !isMinOrderMet}
-                className="w-full py-4 rounded-xl font-extrabold text-sm sm:text-base bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                className="w-full py-4 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl shadow-emerald-600/30 flex items-center justify-center gap-3 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {submitting ? (
-                  <span>Assigning WhatsApp Order Number...</span>
+                  <span>Generating Official WhatsApp Receipt...</span>
+                ) : !isMinOrderMet ? (
+                  <span>Min. Order ₹{minOrderValue.toLocaleString()} Required (Add ₹{minOrderRemaining.toLocaleString()} more)</span>
                 ) : (
                   <>
                     <MessageSquare className="w-5 h-5 fill-white text-emerald-600" />
@@ -370,26 +644,42 @@ const CheckoutPage = () => {
                 )}
               </button>
 
-              <p className="text-center text-[11px] text-slate-400">
-                Your order will receive an official <strong className="text-amber-400">WhatsApp Order Number</strong> and be sent to our factory WhatsApp for packing &amp; dispatch.
-              </p>
+              <div className="flex flex-wrap items-center justify-center gap-y-1 gap-x-4 text-[11px] text-slate-400 pt-1">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Direct Sivakasi Factory Rate
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  100% Green Crackers
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Safe Road Parcel Booking
+                </span>
+              </div>
             </div>
           </form>
         </div>
 
-        {/* RIGHT: Order Summary */}
-        <div className="lg:col-span-5 glass-panel p-6 rounded-2xl space-y-6">
-          <div className="border-b border-slate-800 pb-4">
-            <h2 className="text-lg font-bold text-white">Order Summary</h2>
-            <p className="text-xs text-slate-400">{totalItems} Total items selected</p>
+        {/* RIGHT: Sticky Order Summary */}
+        <div className="lg:col-span-5 lg:sticky lg:top-24 glass-panel p-6 rounded-2xl border border-white/10 space-y-6">
+          <div className="border-b border-white/[0.08] pb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-white">Order Summary</h2>
+              <p className="text-xs text-slate-400">Verified factory pricing</p>
+            </div>
+            <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-xs">
+              {totalItems} Items
+            </span>
           </div>
 
           {/* Item List Scroll */}
-          <div className="max-h-72 overflow-y-auto space-y-3 pr-1">
+          <div className="max-h-72 overflow-y-auto space-y-2.5 pr-1">
             {cart.map((item) => (
               <div
                 key={item.product._id}
-                className="flex items-center justify-between text-xs py-2 border-b border-slate-800/60"
+                className="flex items-center justify-between text-xs py-2 border-b border-white/[0.04]"
               >
                 <div className="flex-1 pr-3">
                   <div className="font-bold text-white truncate">{item.product.name}</div>
@@ -398,14 +688,14 @@ const CheckoutPage = () => {
                   </div>
                 </div>
                 <div className="text-right font-bold text-white">
-                  ₹{item.quantity * item.product.price}
+                  ₹{(item.quantity * item.product.price).toLocaleString()}
                 </div>
               </div>
             ))}
           </div>
 
           {/* Price Breakdown */}
-          <div className="space-y-2 text-xs text-slate-400 border-t border-slate-800 pt-4">
+          <div className="space-y-2 text-xs text-slate-400 border-t border-white/[0.08] pt-4">
             <div className="flex justify-between">
               <span>Total MRP Value</span>
               <span className="line-through">₹{mrpTotal.toLocaleString()}</span>
@@ -418,24 +708,26 @@ const CheckoutPage = () => {
               <span>Item Subtotal</span>
               <span className="text-white font-medium">₹{subtotal.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Standard Logistics Fee</span>
-              <span>{deliveryFee === 0 ? <span className="text-emerald-400 font-bold">FREE</span> : `₹${deliveryFee}`}</span>
-            </div>
-            <div className="pt-3 border-t border-slate-800 flex justify-between text-base font-black text-white">
+            {deliveryFee > 0 && (
+              <div className="flex justify-between">
+                <span>Standard Logistics Fee</span>
+                <span>₹{deliveryFee}</span>
+              </div>
+            )}
+            <div className="pt-3 border-t border-white/[0.08] flex justify-between text-base font-black text-white">
               <span>Net Payable</span>
-              <span className="text-amber-400 text-xl">₹{grandTotal.toLocaleString()}</span>
+              <span className="text-amber-400 text-xl font-extrabold">₹{grandTotal.toLocaleString()}</span>
             </div>
           </div>
 
           {/* Security & Green Cracker Notice */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2 text-[11px] text-slate-400">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-2 text-[11px] text-slate-400">
             <div className="flex items-center gap-2 text-emerald-400 font-bold">
               <ShieldCheck className="w-4 h-4" />
               <span>100% Genuine Sivakasi Factory Direct</span>
             </div>
             <p className="leading-relaxed">
-              Consignment is booked safely via approved road transport parcel services with tracking LR details.
+              Consignment is booked safely via approved road transport parcel services with tracking LR details sent on WhatsApp.
             </p>
           </div>
         </div>

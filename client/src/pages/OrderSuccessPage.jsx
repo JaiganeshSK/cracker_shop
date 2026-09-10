@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import { Copy, Check, Printer, Package, Eye } from 'lucide-react';
+import { Copy, Check, Printer, Eye, CheckCircle2, Home, MessageSquare } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
@@ -188,10 +188,12 @@ const OrderSuccessPage = () => {
               <span>Festival Discount Saved</span>
               <span>- ₹{order.totalDiscount?.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Standard Logistics / Delivery</span>
-              <span>{order.deliveryFee === 0 ? <span className="text-emerald-400 font-bold">FREE</span> : `₹${order.deliveryFee}`}</span>
-            </div>
+            {order.deliveryFee > 0 && (
+              <div className="flex justify-between">
+                <span>Standard Logistics / Delivery</span>
+                <span>₹{order.deliveryFee}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm sm:text-base font-black text-white pt-2 border-t border-slate-800">
               <span>Total Payable ({order.paymentMethod})</span>
               <span className="text-amber-400 text-lg">₹{order.totalAmount.toLocaleString()}</span>
@@ -202,13 +204,17 @@ const OrderSuccessPage = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 no-print">
-        <Link
-          to={`/track-order?q=${order?.orderId || orderId}`}
-          className="w-full sm:w-1/2 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
-        >
-          <Package className="w-4 h-4" />
-          <span>Track Live Order Status</span>
-        </Link>
+        {order && (
+          <a
+            href={`https://wa.me/${String(storeSettings?.whatsapp || '916369050467').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello, I placed order #${order.orderId} for ₹${(order.totalAmount || 0).toLocaleString()} (Customer: ${order.customer?.name}). Please confirm my order.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-1/2 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>Chat on WhatsApp</span>
+          </a>
+        )}
 
         <button
           type="button"

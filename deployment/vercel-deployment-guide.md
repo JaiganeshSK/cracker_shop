@@ -1,4 +1,4 @@
-﻿# Vercel Deployment Guide
+# Vercel Deployment Guide
 ## Festive Cracker E-Commerce Platform & Admin Portal
 
 This guide provides step-by-step instructions to deploy the application on **Vercel**.
@@ -55,8 +55,8 @@ Before deploying, populate your remote MongoDB database with initial cracker cat
    ```
    ✅ Catalog database seeded successfully!
    Admin credentials:
-     Email: admin@srikrishnafireworks.com
-     Password: Admin@Diwali2026
+     Username: admin
+     Password: Pradhika@123
    ```
 
 ---
@@ -101,8 +101,8 @@ The project includes a root `vercel.json` pre-configured to build the Vite clien
    { "status": "online", "service": "Cracker Shop API" }
    ```
 3. **Admin Portal**: Visit `https://your-project.vercel.app/admin/login`
-   - **Email**: `admin@srikrishnafireworks.com`
-   - **Password**: `Admin@Diwali2026`
+   - **Username**: `admin`
+   - **Password**: `Pradhika@123`
 
 ---
 

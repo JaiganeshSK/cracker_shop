@@ -96,19 +96,23 @@ const seedDatabase = async () => {
     // 2. Create Default Store Settings
     await Setting.deleteMany({});
     await Setting.create({
-      shopName: 'Sri Krishna Fireworks Sivakasi',
+      shopName: 'Festive Spark Fireworks',
       tagline: 'Direct Factory Outlet • 100% Certified Green Crackers',
       phone: '+91 94431 23456',
       whatsapp: '919443123456',
-      email: 'sales@srikrishnafireworks.com',
-      address: 'Shop No. 4, Factory By-Pass Road, Sivakasi, Tamil Nadu - 626123',
+      email: 'orders@festivespark.com',
+      address: '124, Sivakasi Main Road, Sivakasi, Tamil Nadu - 626123',
       minOrderValue: 3000,
-      freeDeliveryAbove: 12000,
-      defaultDeliveryFee: 250,
+      freeDeliveryAbove: 0,
+      defaultDeliveryFee: 0,
       announcementText: '💥 Diwali 2026 Mega Booking Open! Flat 80% Discount • Direct Factory Dispatch across India!',
       isAnnouncementActive: true,
-      upiId: 'srikrishnafireworks@upi',
+      upiId: 'festivespark@upi',
       upiQrUrl: '',
+      priceListUrl: '',
+      priceListFileName: '',
+      showPriceListNotice: true,
+      priceListNoticeText: '💥 Diwali 2026 Wholesale Rate Card Available - View & Download PDF',
     });
     console.log('[Seed] Created store settings');
 

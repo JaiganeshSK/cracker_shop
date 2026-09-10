@@ -3,13 +3,13 @@ import { numberToWords } from './numberToWords';
 export function generateInvoiceHtml(order, storeSettings) {
   if (!order) return '';
 
-  const shopName = (storeSettings?.shopName || 'SRI KRISHNA FIREWORKS SIVAKASI').toUpperCase();
+  const shopName = (storeSettings?.shopName || 'FIREWORKS STORE SIVAKASI').toUpperCase();
   const tagline = storeSettings?.tagline || 'Direct Sivakasi Factory Depot • 100% Certified Green Crackers';
-  const address = storeSettings?.address || 'Shop No. 4, Factory By-Pass Road, Sivakasi, Tamil Nadu - 626123';
-  const phone = storeSettings?.phone || '+91 94431 23456';
-  const whatsapp = storeSettings?.whatsapp || '+91 94431 23456';
-  const email = storeSettings?.email || 'sales@srikrishnafireworks.com';
-  const upiId = storeSettings?.upiId || 'srikrishnafireworks@upi';
+  const address = storeSettings?.address || 'Sivakasi, Tamil Nadu - 626123';
+  const phone = storeSettings?.phone || '';
+  const whatsapp = storeSettings?.whatsapp || '';
+  const email = storeSettings?.email || '';
+  const upiId = storeSettings?.upiId || '';
 
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleDateString('en-IN', {
@@ -438,12 +438,14 @@ export function generateInvoiceHtml(order, storeSettings) {
                 <td style="color: #475569;">Net Goods Value</td>
                 <td style="text-align: right; font-weight: 600;">₹${subtotal.toLocaleString('en-IN')}</td>
               </tr>
+              ${order.deliveryFee > 0 ? `
               <tr>
                 <td style="color: #475569;">Packaging &amp; Transport</td>
-                <td style="text-align: right; font-weight: 700; color: ${order.deliveryFee === 0 ? '#047857' : '#0f172a'};">
+                <td style="text-align: right; font-weight: 700; color: #0f172a;">
                   ${deliveryFee}
                 </td>
               </tr>
+              ` : ''}
               <tr class="grand-total">
                 <td>NET INVOICE TOTAL</td>
                 <td style="text-align: right; font-size: 15px; font-weight: 900;">₹${order.totalAmount?.toLocaleString('en-IN')}</td>

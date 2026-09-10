@@ -81,7 +81,7 @@ const AdminLayout = () => {
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-extrabold text-white text-sm">{storeSettings?.shopName || 'Sri Krishna Fireworks'}</div>
+            <div className="font-extrabold text-white text-sm">{storeSettings?.shopName || 'Fireworks Store'}</div>
             <div className="text-[10px] text-amber-400 font-semibold">Admin Workspace</div>
           </div>
         </div>

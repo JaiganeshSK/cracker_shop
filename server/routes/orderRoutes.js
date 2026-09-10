@@ -30,11 +30,9 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cart items cannot be empty' });
     }
 
-    // Fetch shop settings for minimum order & delivery fee calculation
+    // Fetch shop settings for minimum order calculation
     const setting = await Setting.findOne();
     const minOrderValue = setting?.minOrderValue || 0;
-    const freeDeliveryAbove = setting?.freeDeliveryAbove || 10000;
-    const defaultDeliveryFee = setting?.defaultDeliveryFee || 250;
 
     // Validate and calculate totals
     let subtotal = 0;
@@ -76,9 +74,9 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const deliveryFee = subtotal >= freeDeliveryAbove ? 0 : defaultDeliveryFee;
+    const deliveryFee = 0;
     const totalDiscount = Math.max(0, mrpTotal - subtotal);
-    const totalAmount = subtotal + deliveryFee;
+    const totalAmount = subtotal;
 
     const orderId = generateOrderId();
 

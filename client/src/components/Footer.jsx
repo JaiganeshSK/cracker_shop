@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, MapPin, Phone, MessageSquare, Mail, ShieldCheck, Lock, ListOrdered, LayoutGrid } from 'lucide-react';
+import { Flame, MapPin, Phone, MessageSquare, Mail, ShieldCheck, Lock, ListOrdered, LayoutGrid, Instagram } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Footer = ({ onOpenSafetyModal }) => {
@@ -33,7 +33,7 @@ const Footer = ({ onOpenSafetyModal }) => {
                 </div>
               )}
               <span className="text-base font-bold text-white leading-tight break-words">
-                {storeSettings.shopName || 'Sri Krishna Fireworks'}
+                {storeSettings.shopName || 'Public Store'}
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed mb-5 break-words">
@@ -65,11 +65,6 @@ const Footer = ({ onOpenSafetyModal }) => {
                 <Link to="/products" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
                   <LayoutGrid className="w-3.5 h-3.5" />
                   Products Catalog
-                </Link>
-              </li>
-              <li>
-                <Link to="/track-order" className="text-slate-400 hover:text-white transition-colors">
-                  Track My Order
                 </Link>
               </li>
               {onOpenSafetyModal && (
@@ -113,9 +108,22 @@ const Footer = ({ onOpenSafetyModal }) => {
                   WhatsApp: +{storeSettings.whatsapp}
                 </a>
               </li>
+              {storeSettings.instagram && (
+                <li className="flex items-center gap-2.5">
+                  <Instagram className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                  <a
+                    href={storeSettings.instagram.startsWith('http') ? storeSettings.instagram : `https://instagram.com/${storeSettings.instagram.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-pink-300 text-pink-400 font-medium transition-colors break-words"
+                  >
+                    Instagram: {storeSettings.instagram.startsWith('http') ? (storeSettings.instagram.split('/').filter(Boolean).pop() ? `@${storeSettings.instagram.split('/').filter(Boolean).pop()}` : '@instagram') : `@${storeSettings.instagram.replace(/^@/, '')}`}
+                  </a>
+                </li>
+              )}
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-gold-400 flex-shrink-0" />
-                <span className="text-slate-300 break-words">{storeSettings.email || 'sales@srikrishnafireworks.com'}</span>
+                <span className="text-slate-300 break-words">{storeSettings.email || 'orders@festivespark.com'}</span>
               </li>
             </ul>
           </div>
@@ -142,7 +150,7 @@ const Footer = ({ onOpenSafetyModal }) => {
 
         {/* Bottom Bar — Clearly visible text, not cut off */}
         <div className="pt-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
-          <p>© {new Date().getFullYear()} {storeSettings.shopName || 'Sri Krishna Fireworks'}. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {storeSettings.shopName || 'Public Store'}. All rights reserved.</p>
           <div className="flex items-center gap-3">
             <span>Sivakasi Factory Direct</span>
             <span className="text-slate-600">·</span>

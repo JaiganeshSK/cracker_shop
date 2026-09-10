@@ -16,6 +16,7 @@ export const CartProvider = ({ children }) => {
   });
 
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isPriceListModalOpen, setIsPriceListModalOpen] = useState(false);
   const [storeSettings, setStoreSettings] = useState(() => {
     try {
       const cached = localStorage.getItem('cracker_store_settings');
@@ -27,13 +28,21 @@ export const CartProvider = ({ children }) => {
     }
     return {
       minOrderValue: 3000,
-      freeDeliveryAbove: 12000,
-      defaultDeliveryFee: 250,
-      whatsapp: '919443123456',
-      shopName: 'Sri Krishna Fireworks',
+      freeDeliveryAbove: 0,
+      defaultDeliveryFee: 0,
+      whatsapp: '',
+      shopName: 'Public Store',
       logoUrl: '',
       announcementText: '',
       isAnnouncementActive: true,
+      priceListUrl: '',
+      priceListFileName: '',
+      priceListUploadedAt: null,
+      showPriceListNotice: true,
+      priceListNoticeText: '💥 Diwali 2026 Wholesale Rate Card Available - View & Download PDF',
+      instagram: '',
+      showChatWidget: true,
+      chatWidgetGreeting: '',
     };
   });
 
@@ -148,18 +157,18 @@ export const CartProvider = ({ children }) => {
   const savingsPercent = mrpTotal > 0 ? Math.round((totalSavings / mrpTotal) * 100) : 0;
 
   const minOrderValue = storeSettings.minOrderValue || 3000;
-  const freeDeliveryAbove = storeSettings.freeDeliveryAbove || 12000;
-  const defaultDeliveryFee = storeSettings.defaultDeliveryFee || 250;
+  const freeDeliveryAbove = 0;
+  const defaultDeliveryFee = 0;
 
   const isMinOrderMet = subtotal >= minOrderValue;
   const minOrderRemaining = Math.max(0, minOrderValue - subtotal);
 
-  const deliveryFee = subtotal >= freeDeliveryAbove ? 0 : defaultDeliveryFee;
-  const grandTotal = subtotal + (subtotal > 0 ? deliveryFee : 0);
+  const deliveryFee = 0;
+  const grandTotal = subtotal;
 
   // Helper to format WhatsApp order message text with professional monospaced receipt block
   const generateWhatsAppMessage = (customerInfo = {}, orderId = null) => {
-    const shopName = storeSettings.shopName || 'Sri Krishna Fireworks Sivakasi';
+    const shopName = storeSettings.shopName || 'Public Store';
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
     const lines = [
@@ -212,7 +221,9 @@ export const CartProvider = ({ children }) => {
     if (totalSavings > 0) {
       receiptLines.push(`Festival Save (${savingsPercent}%): ${('-Rs.' + totalSavings.toLocaleString()).padStart(15, ' ')}`);
     }
-    receiptLines.push(`Delivery / Freight:   ${(deliveryFee === 0 ? 'FREE' : 'Rs.' + deliveryFee).padStart(16, ' ')}`);
+    if (deliveryFee > 0) {
+      receiptLines.push(`Delivery / Freight:   ${('Rs.' + deliveryFee).padStart(16, ' ')}`);
+    }
     receiptLines.push('--------------------------------------');
     receiptLines.push(`NET TOTAL PAYABLE:    ${('Rs.' + grandTotal.toLocaleString()).padStart(16, ' ')}`);
     receiptLines.push('======================================');
@@ -224,8 +235,6 @@ export const CartProvider = ({ children }) => {
       lines.push('');
       lines.push(`*Order Details & Tax Invoice:*`);
       lines.push(`${origin}/order-success/${orderId}`);
-      lines.push(`*Track Order Live:*`);
-      lines.push(`${origin}/track-order?q=${orderId}`);
     }
 
     lines.push('');
@@ -245,6 +254,8 @@ export const CartProvider = ({ children }) => {
         clearCart,
         isCartOpen,
         setIsCartOpen,
+        isPriceListModalOpen,
+        setIsPriceListModalOpen,
         totalItems,
         subtotal,
         mrpTotal,

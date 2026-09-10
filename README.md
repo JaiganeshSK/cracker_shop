@@ -1,4 +1,4 @@
-# 🧨 Sri Krishna Fireworks Sivakasi
+# 🧨 Cracker Shop Platform
 ### Modern Cracker E-Commerce Platform & Admin Management Portal
 
 An end-to-end festive fireworks e-commerce platform and administrative management portal built with **Node.js, Express, MongoDB (`mongodb://127.0.0.1:27017/cracker_shop`), React 18, and Tailwind CSS**. Features automatic **WebP image conversion via Sharp**, a **Sivakasi-style bulk Quick Order / Price List sheet**, and turnkey **Linux VPS deployment configuration**.
@@ -36,7 +36,7 @@ An end-to-end festive fireworks e-commerce platform and administrative managemen
    - **1-Click Print Packing Slip / Invoice** formatted for thermal or standard A4 printers.
    - Transport LR / Docket number updater.
 4. **Store Settings**:
-   - Customize shop name, phone, WhatsApp number, minimum order limits, free delivery threshold, announcement bar marquee, and UPI ID.
+   - Customize shop name, phone, WhatsApp number, minimum order limits, announcement bar marquee, and UPI ID.
 
 ---
 

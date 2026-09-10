@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Printer, Zap, ArrowRight, ShoppingBag, Search, X,
   CheckCircle2, AlertCircle, Plus, Minus, Sparkles, ChevronDown,
+  FileText, Download, Eye,
 } from 'lucide-react';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
@@ -13,6 +14,7 @@ const QuickOrderPage = () => {
     cart, setItemExactQuantity, totalItems, subtotal, mrpTotal,
     totalSavings, savingsPercent, isMinOrderMet, minOrderValue,
     minOrderRemaining, grandTotal, setIsCartOpen, storeSettings,
+    setIsPriceListModalOpen,
   } = useCart();
 
   const [products, setProducts] = useState([]);
@@ -71,37 +73,47 @@ const QuickOrderPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-slate-800 no-print">
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="bg-[#0f172a] text-amber-400 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
+            <span className="bg-[#0f172a] text-amber-400 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm">
               <Zap className="w-3.5 h-3.5 fill-current" />
-              Sivakasi Wholesale Price List
+              {storeSettings?.shopName || 'Public Store'} • Sivakasi Wholesale
             </span>
-            <span className="text-xs text-rose-300 font-bold bg-[#1e141a] px-3 py-1 rounded-full border border-rose-500/30 shadow-sm">
+            <span className="text-xs text-rose-300 font-medium bg-[#1e141a] px-3 py-1 rounded-full border border-rose-500/30 shadow-sm">
               Flat 80% Off MRP
             </span>
-            <span className="text-xs text-emerald-300 font-bold bg-[#0d1e17] px-3 py-1 rounded-full border border-emerald-500/30 hidden sm:inline-block shadow-sm">
+            <span className="text-xs text-emerald-300 font-medium bg-[#0d1e17] px-3 py-1 rounded-full border border-emerald-500/30 hidden sm:inline-block shadow-sm">
               100% Green Crackers
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
             Quick Order Sheet
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            Enter quantities for any item. Savings & total calculate in real time.
+            {storeSettings?.tagline || 'Enter quantities for any item. Savings & total calculate in real time.'}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 no-print">
           <Link
             to="/products"
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Visual View</span>
           </Link>
+          {storeSettings?.priceListUrl && (
+            <button
+              type="button"
+              onClick={() => setIsPriceListModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-400" />
+              <span>Price List (PDF)</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Print</span>
@@ -109,13 +121,57 @@ const QuickOrderPage = () => {
           <button
             type="button"
             onClick={() => setIsCartOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 transition-all active:scale-95"
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Cart ({totalItems})</span>
           </button>
         </div>
       </div>
+
+      {/* ── Wholesale Rate Card / Price List Notice Banner ─────────────── */}
+      {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
+        <div className="bg-slate-900/70 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors no-print">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-white tracking-tight">
+                  {storeSettings.priceListNoticeText || 'Wholesale Price List (PDF) Available'}
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded">
+                  PDF
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Download or view complete Sivakasi factory rate list with item codes, packing specifications &amp; wholesale prices.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full md:w-auto flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsPriceListModalOpen(true)}
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm active:scale-95"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>View Online</span>
+            </button>
+
+            <a
+              href={storeSettings.priceListUrl}
+              download={storeSettings.priceListFileName || `${storeSettings?.shopName || 'Wholesale'}-Price-List.pdf`}
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-medium text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors active:scale-95"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download PDF</span>
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* ── Search + Category Pills ──────────────────────────────────── */}
       <div className="space-y-3 no-print">
@@ -170,7 +226,7 @@ const QuickOrderPage = () => {
 
       {/* ── Print Header ─────────────────────────────────────────────── */}
       <div className="hidden print-only mb-6 text-center">
-        <h2 className="text-2xl font-black">{storeSettings?.shopName || 'Sri Krishna Fireworks'}</h2>
+        <h2 className="text-2xl font-black">{storeSettings?.shopName || 'Fireworks Store'}</h2>
         <p className="text-sm">Factory Direct Wholesale Cracker Price List 2026</p>
       </div>
 

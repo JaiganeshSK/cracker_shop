@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ListOrdered, LayoutGrid, PackageSearch, ShoppingBag } from 'lucide-react';
+import { ListOrdered, LayoutGrid, ShoppingBag, FileText, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const MobileBottomNav = () => {
   const location = useLocation();
-  const { totalItems, subtotal, setIsCartOpen } = useCart();
+  const { totalItems, subtotal, setIsCartOpen, storeSettings, setIsPriceListModalOpen } = useCart();
+
+  const hasRatePdf = Boolean(storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false);
 
   const isActive = (paths) =>
     Array.isArray(paths) ? paths.includes(location.pathname) : location.pathname === paths;
 
   const navItems = [
-    { to: '/',           paths: ['/', '/quick-order'], icon: ListOrdered,  label: 'Order'    },
-    { to: '/products',   paths: ['/products'],         icon: LayoutGrid,   label: 'Catalog'  },
-    { to: '/track-order',paths: ['/track-order'],      icon: PackageSearch,label: 'Track'    },
+    { to: '/',         paths: ['/', '/quick-order'], icon: ListOrdered, label: 'Order'   },
+    { to: '/products', paths: ['/products'],         icon: LayoutGrid,  label: 'Catalog' },
   ];
 
   return (
@@ -21,7 +22,7 @@ const MobileBottomNav = () => {
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#080c14] border-t border-white/10 shadow-2xl"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="grid grid-cols-4 items-stretch h-[58px]">
+      <div className={`grid ${hasRatePdf ? 'grid-cols-4' : 'grid-cols-3'} items-stretch h-[58px]`}>
         {navItems.map((item) => {
           const active = isActive(item.paths);
           const Icon = item.icon;
@@ -44,6 +45,24 @@ const MobileBottomNav = () => {
             </Link>
           );
         })}
+
+        {/* Rate Card PDF button on mobile */}
+        {hasRatePdf && (
+          <button
+            type="button"
+            onClick={() => setIsPriceListModalOpen(true)}
+            className="flex flex-col items-center justify-center h-full gap-1 transition-colors relative text-slate-400 hover:text-amber-400"
+            aria-label="Wholesale Price List PDF"
+          >
+            <div className="relative">
+              <FileText className="w-[18px] h-[18px]" />
+              <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
+            </div>
+            <span className="text-[10px] font-semibold leading-none">
+              Price List
+            </span>
+          </button>
+        )}
 
         {/* Cart */}
         <button

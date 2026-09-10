@@ -11,7 +11,7 @@ const CartDrawer = () => {
     totalItems, subtotal, mrpTotal, totalSavings,
     savingsPercent, deliveryFee, grandTotal,
     minOrderValue, isMinOrderMet, minOrderRemaining,
-    freeDeliveryAbove, generateWhatsAppMessage, storeSettings,
+    generateWhatsAppMessage, storeSettings,
   } = useCart();
 
   if (!isCartOpen) return null;
@@ -112,11 +112,6 @@ const CartDrawer = () => {
                 ) : (
                   <div className="bg-emerald-500/8 border border-emerald-500/20 rounded-xl p-3.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-emerald-400">Min. order threshold met</span>
-                    {subtotal < freeDeliveryAbove && (
-                      <span className="text-[11px] text-emerald-400/70">
-                        +₹{freeDeliveryAbove - subtotal} for free delivery
-                      </span>
-                    )}
                   </div>
                 )}
 
@@ -201,14 +196,12 @@ const CartDrawer = () => {
                   <span>Item Subtotal</span>
                   <span className="text-white font-medium">₹{subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Delivery Fee</span>
-                  <span>
-                    {deliveryFee === 0
-                      ? <span className="text-emerald-400 font-semibold">FREE</span>
-                      : `₹${deliveryFee}`}
-                  </span>
-                </div>
+                {deliveryFee > 0 && (
+                  <div className="flex justify-between text-slate-400">
+                    <span>Delivery Fee</span>
+                    <span>₹{deliveryFee}</span>
+                  </div>
+                )}
                 <div className="pt-2 border-t border-white/[0.06] flex justify-between items-center">
                   <span className="text-sm font-bold text-white">Total Payable</span>
                   <span className="text-lg font-extrabold text-gold-400">₹{grandTotal.toLocaleString()}</span>

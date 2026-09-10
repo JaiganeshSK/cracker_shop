@@ -9,7 +9,9 @@ import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import CartDrawer from './components/CartDrawer';
 import SafetyModal from './components/SafetyModal';
+import PriceListModal from './components/PriceListModal';
 import SparkleGlow from './components/SparkleGlow';
+import ChatbotWidget from './components/ChatbotWidget';
 
 // Store Pages
 import HomePage from './pages/HomePage';
@@ -17,7 +19,6 @@ import ProductsPage from './pages/ProductsPage';
 import QuickOrderPage from './pages/QuickOrderPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
-import TrackOrderPage from './pages/TrackOrderPage';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -32,11 +33,11 @@ const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
-  const { storeSettings } = useCart();
+  const { storeSettings, isPriceListModalOpen, setIsPriceListModalOpen } = useCart();
 
   // Dynamic route-aware browser tab title and favicon synchronization
   React.useEffect(() => {
-    const shopName = storeSettings?.shopName || 'Fireworks Store';
+    const shopName = storeSettings?.shopName || 'Public Store';
     const path = location.pathname;
 
     let pageTitle = '';
@@ -58,8 +59,6 @@ const AppContent = () => {
       pageTitle = `Checkout | ${shopName}`;
     } else if (path.startsWith('/order-success')) {
       pageTitle = `Order Confirmed | ${shopName}`;
-    } else if (path.startsWith('/track-order')) {
-      pageTitle = `Track Order | ${shopName}`;
     } else if (path.startsWith('/products') || path.startsWith('/catalog')) {
       pageTitle = `Products Catalog | ${shopName}`;
     } else if (path.startsWith('/showcase')) {
@@ -99,7 +98,7 @@ const AppContent = () => {
           <Route path="/showcase" element={<HomePage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
-          <Route path="/track-order" element={<TrackOrderPage />} />
+          <Route path="/track-order" element={<Navigate to="/" replace />} />
 
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -128,10 +127,19 @@ const AppContent = () => {
       {/* Mobile Sticky Bottom Nav */}
       {!isAdminRoute && <MobileBottomNav />}
 
+      {/* Customer Support Chatbot Widget */}
+      {!isAdminRoute && <ChatbotWidget />}
+
       {/* Safety Guidelines Modal */}
       <SafetyModal
         isOpen={safetyModalOpen}
         onClose={() => setSafetyModalOpen(false)}
+      />
+
+      {/* Wholesale Rate Card / Price List Modal */}
+      <PriceListModal
+        isOpen={isPriceListModalOpen}
+        onClose={() => setIsPriceListModalOpen(false)}
       />
     </div>
   );

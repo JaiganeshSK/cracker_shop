@@ -22,6 +22,18 @@ const settingSchema = new mongoose.Schema(
       type: String,
       default: '+91 98765 43210',
     },
+    instagram: {
+      type: String,
+      default: '',
+    },
+    showChatWidget: {
+      type: Boolean,
+      default: true,
+    },
+    chatWidgetGreeting: {
+      type: String,
+      default: 'Hi there! Have questions about crackers, pricing, or your order? Connect with us directly on WhatsApp or Instagram!',
+    },
     email: {
       type: String,
       default: 'orders@festivespark.com',
@@ -36,11 +48,11 @@ const settingSchema = new mongoose.Schema(
     },
     freeDeliveryAbove: {
       type: Number,
-      default: 10000,
+      default: 0,
     },
     defaultDeliveryFee: {
       type: Number,
-      default: 250,
+      default: 0,
     },
     announcementText: {
       type: String,
@@ -57,6 +69,25 @@ const settingSchema = new mongoose.Schema(
     upiQrUrl: {
       type: String,
       default: '',
+    },
+    priceListUrl: {
+      type: String,
+      default: '',
+    },
+    priceListFileName: {
+      type: String,
+      default: '',
+    },
+    priceListUploadedAt: {
+      type: Date,
+    },
+    showPriceListNotice: {
+      type: Boolean,
+      default: true,
+    },
+    priceListNoticeText: {
+      type: String,
+      default: '💥 Diwali 2026 Wholesale Rate Card Available - View & Download PDF',
     },
   },
   {

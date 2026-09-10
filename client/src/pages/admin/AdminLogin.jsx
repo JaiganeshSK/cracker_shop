@@ -37,7 +37,7 @@ const AdminLogin = () => {
           </div>
           <h1 className="text-2xl font-black text-white">Admin Management Portal</h1>
           <p className="text-xs text-slate-400">
-            Secure access for {storeSettings?.shopName || 'Sri Krishna Fireworks Sivakasi'}
+            Secure access for {storeSettings?.shopName || 'Public Store'}
           </p>
         </div>
 

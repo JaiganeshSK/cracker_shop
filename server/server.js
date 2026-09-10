@@ -82,6 +82,14 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/settings', require('./routes/settingRoutes'));
 
+// Fallback direct mounts for serverless / direct proxies
+app.use('/auth', require('./routes/authRoutes'));
+app.use('/categories', require('./routes/categoryRoutes'));
+app.use('/products', require('./routes/productRoutes'));
+app.use('/orders', require('./routes/orderRoutes'));
+app.use('/upload', require('./routes/uploadRoutes'));
+app.use('/settings', require('./routes/settingRoutes'));
+
 // Production: Serve React client build from client/dist
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/dist');
@@ -98,8 +106,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Global 404 handler for API routes
-app.use('/api/*', (req, res) => {
-  res.status(404).json({ success: false, message: 'API route not found' });
+app.use(['/api/*', '/api'], (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API route not found: ${req.method} ${req.originalUrl}`,
+  });
 });
 
 // Global Error Handler

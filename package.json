@@ -19,7 +19,7 @@
     "nodejs",
     "mongodb"
   ],
-  "author": "Sri Krishna Fireworks",
+  "author": "Cracker Shop",
   "license": "ISC",
   "dependencies": {
     "@vercel/blob": "^2.8.0",

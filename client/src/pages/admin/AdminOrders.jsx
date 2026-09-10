@@ -127,7 +127,7 @@ const AdminOrders = () => {
       : '';
     const text = encodeURIComponent(
       `Hello ${order.customer?.name || 'Customer'},\n` +
-      `This is regarding your WhatsApp Order *#${order.orderId}* with ${storeSettings?.shopName || 'Sri Krishna Fireworks'}.\n\n` +
+      `This is regarding your WhatsApp Order *#${order.orderId}* with ${storeSettings?.shopName || 'our store'}.\n\n` +
       `📦 *Order Status:* ${order.orderStatus}\n` +
       `💰 *Total Amount:* ₹${order.totalAmount?.toLocaleString()}\n` +
       (order.trackingNumber ? `🚚 *LR / Docket Tracking No:* ${order.trackingNumber}\n` : '') +
@@ -375,7 +375,7 @@ const AdminOrders = () => {
 
             {/* Print Header (Print mode only) */}
             <div className="hidden print-only text-center border-b pb-4">
-              <h2 className="text-2xl font-black">{storeSettings?.shopName || 'Sri Krishna Fireworks Sivakasi'}</h2>
+              <h2 className="text-2xl font-black">{storeSettings?.shopName || 'Fireworks Store'}</h2>
               <p className="text-xs">Packing Slip & Consignment Dispatch Manifest</p>
               <p className="text-xs font-mono font-bold mt-1">Order ID: {selectedOrder.orderId}</p>
             </div>
@@ -498,7 +498,7 @@ const AdminOrders = () => {
                 </button>
               </div>
               <p className="text-[11px] text-slate-400">
-                Customers can use this tracking number on the public "Track Order" page to trace their consignment.
+                Transport LR / Consignment tracking number for records and customer WhatsApp updates.
               </p>
             </div>
           </div>
