@@ -8,10 +8,12 @@ const { protect } = require('../middleware/authMiddleware');
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    let setting = await Setting.findOne();
+    let setting = await Setting.findOne().lean();
     if (!setting) {
       setting = await Setting.create({});
     }
+    // Enable Edge CDN caching for 60s with stale-while-revalidate
+    res.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.json({ success: true, setting });
   } catch (error) {
     console.error('Fetch settings error:', error);

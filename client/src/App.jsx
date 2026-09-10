@@ -20,14 +20,14 @@ import QuickOrderPage from './pages/QuickOrderPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 
-// Admin Pages
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminLayout from './pages/admin/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminCategories from './pages/admin/AdminCategories';
-import AdminProducts from './pages/admin/AdminProducts';
-import AdminOrders from './pages/admin/AdminOrders';
-import AdminSettings from './pages/admin/AdminSettings';
+// Admin Pages (Code-split via React.lazy so storefront loads instantly)
+const AdminLogin = React.lazy(() => import('./pages/admin/AdminLogin'));
+const AdminLayout = React.lazy(() => import('./pages/admin/AdminLayout'));
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminCategories = React.lazy(() => import('./pages/admin/AdminCategories'));
+const AdminProducts = React.lazy(() => import('./pages/admin/AdminProducts'));
+const AdminOrders = React.lazy(() => import('./pages/admin/AdminOrders'));
+const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -100,9 +100,23 @@ const AppContent = () => {
           <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
           <Route path="/track-order" element={<Navigate to="/" replace />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
+          {/* Admin Routes (Lazy Loaded) */}
+          <Route
+            path="/admin/login"
+            element={
+              <React.Suspense fallback={<div className="min-h-screen bg-[#070a12] flex items-center justify-center text-xs font-semibold text-amber-400">Loading portal...</div>}>
+                <AdminLogin />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <React.Suspense fallback={<div className="min-h-screen bg-[#070a12] flex items-center justify-center text-xs font-semibold text-amber-400">Loading portal...</div>}>
+                <AdminLayout />
+              </React.Suspense>
+            }
+          >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="categories" element={<AdminCategories />} />

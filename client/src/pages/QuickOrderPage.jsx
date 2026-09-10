@@ -17,9 +17,29 @@ const QuickOrderPage = () => {
     setIsPriceListModalOpen,
   } = useCart();
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [masterCategories, setMasterCategories] = useState([]);
+  const [products, setProducts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cracker_cached_products');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem('cracker_cached_products');
+    } catch {
+      return true;
+    }
+  });
+  const [masterCategories, setMasterCategories] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cracker_cached_categories');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [filterText, setFilterText] = useState('');
 
   useEffect(() => {
@@ -29,8 +49,18 @@ const QuickOrderPage = () => {
           api.get('/products'),
           api.get('/categories'),
         ]);
-        if (prodRes.data.success) setProducts(prodRes.data.products);
-        if (catRes.data.success) setMasterCategories(catRes.data.categories);
+        if (prodRes.data.success && prodRes.data.products) {
+          setProducts(prodRes.data.products);
+          try {
+            localStorage.setItem('cracker_cached_products', JSON.stringify(prodRes.data.products));
+          } catch (e) {}
+        }
+        if (catRes.data.success && catRes.data.categories) {
+          setMasterCategories(catRes.data.categories);
+          try {
+            localStorage.setItem('cracker_cached_categories', JSON.stringify(catRes.data.categories));
+          } catch (e) {}
+        }
       } catch (err) {
         console.error('Failed to load products for quick order:', err);
       } finally {

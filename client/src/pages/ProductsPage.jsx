@@ -14,9 +14,29 @@ const SORT_OPTIONS = [
 
 const ProductsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cracker_cached_products');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [categories, setCategories] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cracker_cached_categories');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem('cracker_cached_products');
+    } catch {
+      return true;
+    }
+  });
   const [showFilters, setShowFilters] = useState(false);
 
   const currentCategory = searchParams.get('category') || 'All';
@@ -29,7 +49,12 @@ const ProductsPage = () => {
     const fetchCategories = async () => {
       try {
         const res = await api.get('/products/categories');
-        if (res.data.success) setCategories(res.data.categories);
+        if (res.data.success && res.data.categories) {
+          setCategories(res.data.categories);
+          try {
+            localStorage.setItem('cracker_cached_categories', JSON.stringify(res.data.categories));
+          } catch (e) {}
+        }
       } catch (err) {
         console.error('Failed to load categories:', err);
       }
@@ -39,7 +64,10 @@ const ProductsPage = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
+      // Only show full loading spinner if we don't already have products displayed
+      if (products.length === 0) {
+        setLoading(true);
+      }
       try {
         const params = new URLSearchParams();
         if (currentCategory && currentCategory !== 'All') params.append('category', currentCategory);
@@ -48,10 +76,16 @@ const ProductsPage = () => {
         if (sortBy !== 'default') params.append('sort', sortBy);
 
         const res = await api.get(`/products?${params.toString()}`);
-        if (res.data.success) {
+        if (res.data.success && res.data.products) {
           let list = res.data.products;
           if (selectedSound !== 'All') list = list.filter((p) => p.soundLevel === selectedSound);
           setProducts(list);
+          // Cache default catalog
+          if (!currentCategory || currentCategory === 'All') {
+            try {
+              localStorage.setItem('cracker_cached_products', JSON.stringify(res.data.products));
+            } catch (e) {}
+          }
         }
       } catch (err) {
         console.error('Failed to load products:', err);

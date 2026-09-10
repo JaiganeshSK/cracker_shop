@@ -9,7 +9,7 @@ const { protect } = require('../middleware/authMiddleware');
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true }).sort({ sortOrder: 1, name: 1 });
+    const categories = await Category.find({ isActive: true }).sort({ sortOrder: 1, name: 1 }).lean();
 
     // Count products per category
     const productCounts = await Product.aggregate([
@@ -30,6 +30,8 @@ router.get('/', async (req, res) => {
       productCount: countMap[cat.name] || 0,
     }));
 
+    // Enable Edge CDN caching for 60s with stale-while-revalidate
+    res.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.json({ success: true, count: formatted.length, categories: formatted });
   } catch (error) {
     console.error('Fetch categories error:', error);

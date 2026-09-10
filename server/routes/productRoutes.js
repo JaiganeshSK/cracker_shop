@@ -45,7 +45,9 @@ router.get('/', async (req, res) => {
       query = query.sort({ sortOrder: 1, createdAt: -1 });
     }
 
-    const products = await query.exec();
+    const products = await query.lean().exec();
+    // Enable Edge CDN caching for 60s with stale-while-revalidate
+    res.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.json({ success: true, count: products.length, products });
   } catch (error) {
     console.error('Fetch products error:', error);
