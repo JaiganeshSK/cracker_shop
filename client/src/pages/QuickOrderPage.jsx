@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  Printer, Zap, ArrowRight, ShoppingBag, Search, X,
+  Zap, ArrowRight, ShoppingBag, Search, X, LayoutGrid, SlidersHorizontal,
   CheckCircle2, AlertCircle, Plus, Minus, Sparkles, ChevronDown,
   FileText, Download, Eye,
 } from 'lucide-react';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
+
+const SOUND_LEVELS = ['All', 'Silent / Visual', 'Mild Sound', 'Musical / Whistling', 'Loud Sound'];
+const SORT_OPTIONS = [
+  { value: 'default', label: 'Featured' },
+  { value: 'price-asc', label: 'Price ↑' },
+  { value: 'price-desc', label: 'Price ↓' },
+  { value: 'discount', label: 'Best Discount' },
+];
 
 const QuickOrderPage = () => {
   const navigate = useNavigate();
@@ -40,14 +48,20 @@ const QuickOrderPage = () => {
       return [];
     }
   });
-  const [filterText, setFilterText] = useState('');
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentCategory, setCurrentCategory] = useState('All');
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedSound, setSelectedSound] = useState('All');
+  const [sortBy, setSortBy] = useState('default');
+  const [inStockOnly, setInStockOnly] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         const [prodRes, catRes] = await Promise.all([
-          api.get('/products'),
-          api.get('/categories'),
+          api.get('/products?limit=1000'),
+          api.get('/products/categories'),
         ]);
         if (prodRes.data.success && prodRes.data.products) {
           setProducts(prodRes.data.products);
@@ -70,25 +84,52 @@ const QuickOrderPage = () => {
     fetchAllData();
   }, []);
 
-  const filteredProducts = products.filter((p) => {
-    if (!filterText) return true;
-    return (
-      p.name.toLowerCase().includes(filterText.toLowerCase()) ||
-      p.category.toLowerCase().includes(filterText.toLowerCase())
-    );
+  const clearSearch = () => setSearchTerm('');
+
+  const resetAll = () => {
+    setSearchTerm('');
+    setSelectedSound('All');
+    setSortBy('default');
+    setInStockOnly(false);
+    setCurrentCategory('All');
+  };
+
+  const hasActiveFilters =
+    currentCategory !== 'All' || searchTerm || selectedSound !== 'All' || sortBy !== 'default' || inStockOnly;
+
+  let filteredProducts = products.filter((p) => {
+    let match = true;
+    if (currentCategory !== 'All' && p.category !== currentCategory) match = false;
+    if (selectedSound !== 'All' && p.soundLevel !== selectedSound) match = false;
+    if (inStockOnly && !p.inStock) match = false;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      if (!p.name.toLowerCase().includes(q) && !p.category.toLowerCase().includes(q)) match = false;
+    }
+    return match;
   });
+
+  if (sortBy === 'price-asc') {
+    filteredProducts.sort((a, b) => (a.discountedPrice || a.price) - (b.discountedPrice || b.price));
+  } else if (sortBy === 'price-desc') {
+    filteredProducts.sort((a, b) => (b.discountedPrice || b.price) - (a.discountedPrice || a.price));
+  } else if (sortBy === 'discount') {
+    filteredProducts.sort((a, b) => {
+      const p1 = Math.round(((a.price - (a.discountedPrice || a.price)) / a.price) * 100);
+      const p2 = Math.round(((b.price - (b.discountedPrice || b.price)) / b.price) * 100);
+      return p2 - p1;
+    });
+  }
 
   const categories =
     masterCategories.length > 0
-      ? masterCategories.map((c) => c.name).filter((catName) => filteredProducts.some((p) => p.category === catName))
-      : [...new Set(filteredProducts.map((p) => p.category))];
+      ? masterCategories.map((c) => c.name)
+      : [...new Set(products.map((p) => p.category))];
 
   const getProductQty = (productId) => {
     const item = cart.find((i) => i.product._id === productId);
     return item ? item.quantity : 0;
   };
-
-  const handlePrint = () => window.print();
 
   let globalIndex = 0;
 
@@ -100,139 +141,142 @@ const QuickOrderPage = () => {
     <div className={`max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-5 ${BOTTOM_BAR_PB}`}>
 
       {/* ── Page Header ─────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-white/[0.06] no-print">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2 animate-fade-up">
-            <span className="badge-gradient text-amber-400 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 fill-current" />
-              {storeSettings?.shopName || 'Public Store'} • Sivakasi Wholesale
-            </span>
-            <span className="text-xs text-rose-300 font-medium bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/25">
-              Flat 80% Off MRP
-            </span>
-            <span className="text-xs text-emerald-300 font-medium bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/25 hidden sm:inline-block">
-              100% Green Crackers
-            </span>
-          </div>
-          <h1 className="animate-fade-up-1 text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Quick Order Sheet
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.06] no-print">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2 flex-wrap">
+            <span>Quick Order Sheet</span>
+            {!loading && (
+              <span className="text-sm font-semibold bg-amber-500/10 text-amber-400 px-3 py-1 rounded-full border border-amber-500/20">
+                {filteredProducts.length} Items
+              </span>
+            )}
           </h1>
-          <p className="animate-fade-up-2 text-xs sm:text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
             {storeSettings?.tagline || 'Enter quantities for any item. Savings & total calculate in real time.'}
           </p>
         </div>
 
-        <div className="animate-fade-up-2 flex flex-wrap items-center gap-2 no-print">
-          <Link
-            to="/products"
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 hover:border-white/20 transition-all"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Visual View</span>
-          </Link>
-          {storeSettings?.priceListUrl && (
-            <button
-              type="button"
-              onClick={() => setIsPriceListModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm badge-gradient text-amber-300 transition-all hover:opacity-90"
-            >
-              <FileText className="w-3.5 h-3.5 text-amber-400" />
-              <span>Price List</span>
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-medium text-xs sm:text-sm bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 hover:border-white/20 transition-all"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Print</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsCartOpen(true)}
-            className="btn-gold btn-ripple flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Cart ({totalItems})</span>
-          </button>
-        </div>
+        <Link
+          to="/products"
+          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-amber-500/20 hover:opacity-95 transition-all active:scale-95"
+        >
+          <LayoutGrid className="w-4 h-4 fill-current" />
+          <span>Catalog</span>
+        </Link>
       </div>
 
-      {/* ── Wholesale Rate Card / Price List Notice Banner ─────────────── */}
-      {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
-        <div className="glow-card rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print animate-fade-up-3">
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 flex-shrink-0">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm sm:text-base font-bold text-white tracking-tight">
-                  {storeSettings.priceListNoticeText || 'Wholesale Price List (PDF) Available'}
-                </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider badge-gradient text-amber-400 px-2 py-0.5 rounded">
-                  PDF
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Download or view complete Sivakasi factory rate list with item codes, packing specifications &amp; wholesale prices.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full md:w-auto flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsPriceListModalOpen(true)}
-              className="btn-gold btn-ripple flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>View Online</span>
-            </button>
-
-            <a
-              href={storeSettings.priceListUrl}
-              download={storeSettings.priceListFileName || `${storeSettings?.shopName || 'Wholesale'}-Price-List.pdf`}
-              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-medium text-xs sm:text-sm bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 hover:border-white/20 transition-all active:scale-95"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download PDF</span>
-            </a>
-          </div>
-        </div>
-      )}
-
-      {/* ── Search + Category Pills ──────────────────────────────────── */}
+      {/* ── Search + Filter Row ──────────────────────────────────────── */}
       <div className="space-y-3 no-print animate-fade-up-3">
-        <div className="relative max-w-lg">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Filter by cracker name or category..."
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            className="input-glow w-full pl-10 pr-10 py-3 rounded-xl text-sm text-white placeholder-slate-600"
-          />
-          {filterText && (
-            <button
-              onClick={() => setFilterText('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        {/* Search bar */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search sparklers, rockets, chakkars..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10 py-3 bg-slate-900 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-colors"
+            />
+            {searchTerm && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Filter toggle button (mobile) */}
+          <button
+            onClick={() => setShowFilters((v) => !v)}
+            className={`flex items-center gap-1.5 px-4 py-3 rounded-xl font-semibold text-sm border transition-colors ${
+              showFilters || hasActiveFilters
+                ? 'bg-amber-500 text-slate-950 border-amber-400'
+                : 'bg-slate-900 text-slate-300 border-slate-700/80 hover:bg-slate-800'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="hidden sm:inline">Filters</span>
+            {hasActiveFilters && (
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 sm:hidden" />
+            )}
+          </button>
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
-          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest whitespace-nowrap flex-shrink-0">
-            Jump:
-          </span>
+        {/* Expanded Filters */}
+        {showFilters && (
+          <div className="glass-panel rounded-2xl p-4 border border-slate-700/60 space-y-4 animate-fade-in">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Sound Filter */}
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">
+                  Sound Level
+                </label>
+                <select
+                  value={selectedSound}
+                  onChange={(e) => setSelectedSound(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500"
+                >
+                  {SOUND_LEVELS.map((s) => (
+                    <option key={s} value={s}>{s === 'All' ? 'All Sounds' : s}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort */}
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">
+                  Sort By
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500"
+                >
+                  {SORT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* In Stock Toggle */}
+              <div className="flex items-end pb-0.5">
+                <button
+                  onClick={() => setInStockOnly((v) => !v)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm w-full justify-center border transition-colors ${
+                    inStockOnly
+                      ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
+                      : 'bg-slate-900 text-slate-400 border-slate-700/80 hover:bg-slate-800'
+                  }`}
+                >
+                  <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${inStockOnly ? 'bg-emerald-400 border-emerald-400' : 'border-slate-600'}`} />
+                  <span>In Stock Only</span>
+                </button>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <button
+                onClick={resetAll}
+                className="text-xs text-rose-400 hover:text-rose-300 font-semibold underline underline-offset-2"
+              >
+                ✕ Clear all filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Category Pills — horizontal scroll */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
           <button
             type="button"
-            onClick={() => setFilterText('')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
-              !filterText ? 'pill-active' : 'pill-inactive'
+            onClick={() => setCurrentCategory('All')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 ${
+              currentCategory === 'All'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25'
+                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
             }`}
           >
             All
@@ -241,23 +285,17 @@ const QuickOrderPage = () => {
             <button
               key={cat}
               type="button"
-              onClick={() => setFilterText(cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
-                filterText.toLowerCase() === cat.toLowerCase()
-                  ? 'pill-active'
-                  : 'pill-inactive'
+              onClick={() => setCurrentCategory(cat)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 ${
+                currentCategory === cat
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25'
+                  : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
               }`}
             >
               {cat}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* ── Print Header ─────────────────────────────────────────────── */}
-      <div className="hidden print-only mb-6 text-center">
-        <h2 className="text-2xl font-black">{storeSettings?.shopName || 'Fireworks Store'}</h2>
-        <p className="text-sm">Factory Direct Wholesale Cracker Price List 2026</p>
       </div>
 
       {/* ── Tables / Content ─────────────────────────────────────────── */}
@@ -267,12 +305,12 @@ const QuickOrderPage = () => {
             <div key={n} className="shimmer-skeleton rounded-2xl h-48" />
           ))}
         </div>
-      ) : categories.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         <div className="glass-panel p-12 rounded-2xl text-center border border-slate-800/60">
           <div className="text-4xl mb-3">🎆</div>
           <p className="text-slate-400 font-medium">No crackers matched your filter.</p>
           <button
-            onClick={() => setFilterText('')}
+            onClick={resetAll}
             className="mt-4 text-xs font-bold text-amber-400 hover:text-amber-300"
           >
             Clear filter
@@ -282,6 +320,7 @@ const QuickOrderPage = () => {
         <div className="space-y-5">
           {categories.map((category) => {
             const catItems = filteredProducts.filter((p) => p.category === category);
+            if (catItems.length === 0) return null;
             const catTotal = catItems.reduce((sum, p) => sum + getProductQty(p._id) * p.price, 0);
 
             return (
@@ -337,9 +376,10 @@ const QuickOrderPage = () => {
                             <td className="py-3 px-3 text-center text-slate-500 font-mono text-xs">{globalIndex}</td>
                             <td className="py-2 px-3 no-print">
                               <img
-                                src={product.imageUrl || '/uploads/products/placeholder.webp'}
+                                src={product.imageUrl || storeSettings?.logoUrl || ''}
                                 alt={product.name}
                                 className="w-10 h-10 object-cover rounded-lg bg-slate-900 border border-slate-800"
+                                onError={(e) => { e.target.style.display = 'none'; }}
                                 loading="lazy"
                               />
                             </td>
@@ -417,10 +457,11 @@ const QuickOrderPage = () => {
                       >
                         {/* Image */}
                         <img
-                          src={product.imageUrl || '/uploads/products/placeholder.webp'}
+                          src={product.imageUrl || storeSettings?.logoUrl || ''}
                           alt={product.name}
                           className="w-14 h-14 object-cover rounded-xl bg-slate-900 border border-slate-800 flex-shrink-0"
                           loading="lazy"
+                          onError={(e) => { e.target.style.display = 'none'; }}
                         />
 
                         {/* Info */}

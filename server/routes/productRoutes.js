@@ -155,7 +155,7 @@ const prepareProductsForBulkInsert = (items) => {
             ? Number(item.discountPercentage)
             : discountPercentage,
         piecePerBox: item.piecePerBox ? String(item.piecePerBox).trim() : '1 Box',
-        imageUrl: item.imageUrl ? String(item.imageUrl).trim() : '/uploads/products/placeholder.webp',
+        imageUrl: item.imageUrl ? String(item.imageUrl).trim() : '',
         imageFileName: item.imageFileName ? String(item.imageFileName).trim() : '',
         soundLevel: item.soundLevel || 'Mild Sound',
         inStock: item.inStock !== undefined ? Boolean(item.inStock) : true,
@@ -252,7 +252,7 @@ router.post('/', protect, async (req, res) => {
       price,
       discountPercentage,
       piecePerBox: piecePerBox || '1 Box',
-      imageUrl: imageUrl || '/uploads/products/placeholder.webp',
+      imageUrl: imageUrl || '',
       imageFileName: imageFileName || '',
       soundLevel: soundLevel || 'Mild Sound',
       inStock: inStock !== undefined ? inStock : true,

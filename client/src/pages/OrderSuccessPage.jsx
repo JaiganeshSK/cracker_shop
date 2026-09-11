@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import { Copy, Check, Printer, Eye, CheckCircle2, Home, MessageSquare } from 'lucide-react';
+import { Copy, Check, Eye, CheckCircle2, Home, MessageSquare } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import InvoiceModal from '../components/InvoiceModal';
-import { printInvoice } from '../utils/printInvoice';
 
 const OrderSuccessPage = () => {
   const { orderId } = useParams();
@@ -51,12 +50,6 @@ const OrderSuccessPage = () => {
       navigator.clipboard.writeText(order.orderId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const handlePrint = () => {
-    if (order) {
-      printInvoice(order, storeSettings);
     }
   };
 
@@ -116,14 +109,6 @@ const OrderSuccessPage = () => {
               </p>
             </div>
             <div className="flex items-center gap-2 no-print">
-              <button
-                onClick={handlePrint}
-                className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
-                title="Print Tax Invoice Directly"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print Invoice</span>
-              </button>
               <button
                 onClick={() => setIsInvoiceOpen(true)}
                 className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -215,15 +200,6 @@ const OrderSuccessPage = () => {
             <span>Chat on WhatsApp</span>
           </a>
         )}
-
-        <button
-          type="button"
-          onClick={handlePrint}
-          className="w-full sm:w-1/2 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex items-center justify-center gap-2 transition-colors cursor-pointer"
-        >
-          <Printer className="w-4 h-4" />
-          <span>Print / Download Tax Invoice</span>
-        </button>
       </div>
 
       <div className="text-center no-print pt-2">
@@ -239,6 +215,7 @@ const OrderSuccessPage = () => {
         onClose={() => setIsInvoiceOpen(false)}
         order={order}
         storeSettings={storeSettings}
+        showPrint={false}
       />
     </div>
   );

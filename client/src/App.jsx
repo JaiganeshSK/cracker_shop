@@ -12,6 +12,7 @@ import SafetyModal from './components/SafetyModal';
 import PriceListModal from './components/PriceListModal';
 import SparkleGlow from './components/SparkleGlow';
 import ChatbotWidget from './components/ChatbotWidget';
+import DisclaimerModal from './components/DisclaimerModal';
 
 // Store Pages
 import HomePage from './pages/HomePage';
@@ -155,6 +156,9 @@ const AppContent = () => {
         isOpen={isPriceListModalOpen}
         onClose={() => setIsPriceListModalOpen(false)}
       />
+
+      {/* Supreme Court Order Disclaimer Modal */}
+      <DisclaimerModal />
     </div>
   );
 };

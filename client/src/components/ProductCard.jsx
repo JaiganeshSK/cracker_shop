@@ -10,7 +10,7 @@ const SOUND_CONFIG = {
 };
 
 const ProductCard = ({ product }) => {
-  const { addToCart, cart } = useCart();
+  const { addToCart, cart, storeSettings } = useCart();
   const [qty, setQty] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -52,13 +52,11 @@ const ProductCard = ({ product }) => {
       {/* Product Image */}
       <div className="img-hover-shine relative w-full aspect-[4/3] bg-surface-elevated">
         <img
-          src={product.imageUrl || '/uploads/products/placeholder.webp'}
+          src={product.imageUrl || storeSettings?.logoUrl || ''}
           alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
-          className="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-500 ease-out"
-          onError={(e) => {
-            e.target.src = 'https://placehold.co/600x450/0d1420/d4a017?text=Fireworks';
-          }}
+          onError={(e) => { e.target.style.display = 'none'; }}
         />
         {/* Category pill */}
         <div className="absolute bottom-2 left-2 bg-surface-base/85 backdrop-blur-md px-2 py-0.5 rounded-md text-[10px] font-medium text-slate-400 border border-white/[0.07]">

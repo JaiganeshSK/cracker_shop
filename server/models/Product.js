@@ -40,7 +40,7 @@ const productSchema = new mongoose.Schema(
     },
     imageUrl: {
       type: String,
-      default: '/uploads/products/placeholder.webp',
+      default: '',
     },
     imageFileName: {
       type: String,

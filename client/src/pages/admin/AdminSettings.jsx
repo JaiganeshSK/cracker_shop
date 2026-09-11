@@ -55,6 +55,8 @@ const AdminSettings = () => {
             instagram: res.data.setting.instagram || '',
             showChatWidget: res.data.setting.showChatWidget !== false,
             chatWidgetGreeting: res.data.setting.chatWidgetGreeting || 'Hi there! Have questions about crackers, pricing, or your order? Connect with us directly on WhatsApp or Instagram!',
+            phone: res.data.setting.phone?.replace('+91', '') || '',
+            whatsapp: res.data.setting.whatsapp?.replace('+91', '') || '',
           });
         }
       } catch (err) {
@@ -68,9 +70,15 @@ const AdminSettings = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    let finalValue = type === 'checkbox' ? checked : value;
+    
+    if (name === 'phone' || name === 'whatsapp') {
+      finalValue = finalValue.replace(/\D/g, '').slice(0, 10);
+    }
+    
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: finalValue,
     });
   };
 
@@ -189,11 +197,36 @@ const AdminSettings = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+
+    // Validations
+    if (!formData.email) {
+      showErrorToast('Support Email & Login Email is mandatory');
+      return;
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        showErrorToast('Please enter a valid support email address');
+        return;
+      }
+    }
+
+    if (formData.phone && formData.phone.length !== 10) {
+      showErrorToast('Support Phone Number must be exactly 10 digits');
+      return;
+    }
+
+    if (formData.whatsapp && formData.whatsapp.length !== 10) {
+      showErrorToast('WhatsApp Number must be exactly 10 digits');
+      return;
+    }
+
     setSaving(true);
     setSuccessMsg('');
     try {
       const payload = {
         ...formData,
+        phone: formData.phone ? `+91${formData.phone}` : '',
+        whatsapp: formData.whatsapp ? `+91${formData.whatsapp}` : '',
         freeDeliveryAbove: 0,
         defaultDeliveryFee: 0,
       };
@@ -376,20 +409,30 @@ const AdminSettings = () => {
 
             <div>
               <label className="block text-slate-300 font-semibold mb-1">Support Phone</label>
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
-              />
+              <div className="flex">
+                <span className="inline-flex items-center px-3.5 bg-slate-800 border border-r-0 border-slate-700 rounded-l-xl text-slate-400 font-medium">
+                  +91
+                </span>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="10 digit mobile number"
+                  maxLength="10"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-r-xl text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 font-semibold mb-1">Support Email</label>
+              <label className="block text-slate-300 font-semibold mb-1">
+                Support Email &amp; Login Email <span className="text-rose-400">*</span>
+              </label>
               <input
                 type="email"
                 name="email"
+                required
                 value={formData.email || ''}
                 onChange={handleChange}
                 placeholder="e.g. orders@publicstore.com"
@@ -399,15 +442,22 @@ const AdminSettings = () => {
 
             <div>
               <label className="block text-slate-300 font-semibold mb-1">
-                WhatsApp Order Number (e.g. 919443123456)
+                WhatsApp Order Number
               </label>
-              <input
-                type="text"
-                name="whatsapp"
-                value={formData.whatsapp}
-                onChange={handleChange}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
-              />
+              <div className="flex">
+                <span className="inline-flex items-center px-3.5 bg-slate-800 border border-r-0 border-slate-700 rounded-l-xl text-slate-400 font-medium">
+                  +91
+                </span>
+                <input
+                  type="text"
+                  name="whatsapp"
+                  value={formData.whatsapp}
+                  onChange={handleChange}
+                  placeholder="10 digit mobile number"
+                  maxLength="10"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-r-xl text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
             </div>
 
             <div>
@@ -577,41 +627,7 @@ const AdminSettings = () => {
               </div>
             )}
 
-            {/* Display Controls */}
-            {formData.priceListUrl && (
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="showPriceListNotice"
-                    name="showPriceListNotice"
-                    checked={formData.showPriceListNotice !== false}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-amber-500 bg-slate-950 border-slate-700 rounded focus:ring-amber-500"
-                  />
-                  <label htmlFor="showPriceListNotice" className="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
-                    Display notice banner &amp; download buttons in customer storefront
-                  </label>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Customer Notice Headline
-                  </label>
-                  <input
-                    type="text"
-                    name="priceListNoticeText"
-                    value={formData.priceListNoticeText || ''}
-                    onChange={handleChange}
-                    placeholder="e.g. 💥 Diwali 2026 Wholesale Rate Card Available - View & Download PDF"
-                    className="w-full px-3.5 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500"
-                  />
-                  <span className="text-[11px] text-slate-500">
-                    Shown prominently on the Quick Order sheet and homepage
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

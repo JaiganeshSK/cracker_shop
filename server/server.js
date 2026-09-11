@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const rateLimit = require('express-rate-limit');
 
 // Load environment variables
 dotenv.config();
@@ -14,9 +15,20 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: true, // Reflect request origin or specify allowed origins
+  origin: process.env.CLIENT_URL || 'http://localhost:5173', // Only allow specified client URL or local dev
   credentials: true,
 }));
+
+// Apply global rate limiting to all API routes
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api', apiLimiter);
 
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
@@ -151,3 +163,4 @@ if (!process.env.VERCEL) {
 }
 
 module.exports = app;
+// touch

@@ -124,10 +124,10 @@ const CartDrawer = () => {
                       className="bg-surface-elevated border border-white/[0.06] rounded-xl p-3 flex gap-3 items-center"
                     >
                       <img
-                        src={item.product.imageUrl || '/uploads/products/placeholder.webp'}
+                        src={item.product.imageUrl || storeSettings?.logoUrl || ''}
                         alt={item.product.name}
                         className="w-14 h-14 object-cover rounded-lg bg-surface-card border border-white/[0.06] flex-shrink-0"
-                        onError={(e) => { e.target.src = 'https://placehold.co/100x100/0d1420/d4a017?text=FW'; }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
                       />
 
                       <div className="flex-1 min-w-0">

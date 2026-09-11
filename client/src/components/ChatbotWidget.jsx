@@ -163,24 +163,6 @@ const ChatbotWidget = () => {
                 </div>
               </a>
             ) : null}
-
-            {/* Quick Option: Wholesale Rate List PDF */}
-            {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  setIsPriceListModalOpen(true);
-                }}
-                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-amber-300 border border-amber-500/25 hover:border-amber-500/40 transition-all text-left text-xs font-medium"
-              >
-                <div className="flex items-center gap-2.5">
-                  <FileText className="w-4 h-4 text-amber-400" />
-                  <span>View Wholesale Price List (PDF)</span>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
-              </button>
-            )}
           </div>
 
           {/* Footer with Powered by ASMI TECH Logo */}

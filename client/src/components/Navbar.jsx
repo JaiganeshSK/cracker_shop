@@ -101,17 +101,7 @@ const Navbar = ({ onOpenSafetyModal }) => {
                   <span>Safety</span>
                 </button>
               )}
-              {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
-                <button
-                  type="button"
-                  onClick={() => setIsPriceListModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-300 badge-gradient hover:opacity-90 transition-all flex items-center gap-1.5"
-                  title="Wholesale Price List (PDF)"
-                >
-                  <FileText className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Price List</span>
-                </button>
-              )}
+
             </nav>
 
             {/* Right Actions */}
@@ -194,37 +184,6 @@ const Navbar = ({ onOpenSafetyModal }) => {
               <LayoutGrid className="w-4 h-4 text-slate-400 flex-shrink-0" />
               <span>Products Catalog</span>
             </Link>
-
-            {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
-              <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 my-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 flex-shrink-0">
-                    <FileText className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white">Wholesale Price List (PDF)</div>
-                    <div className="text-[11px] text-slate-400">Official factory rate card</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setMobileMenuOpen(false); setIsPriceListModalOpen(true); }}
-                    className="py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold rounded-lg text-center transition-colors"
-                  >
-                    View Online
-                  </button>
-                  <a
-                    href={storeSettings.priceListUrl}
-                    download={storeSettings.priceListFileName || `${storeSettings?.shopName || 'Wholesale'}-Price-List.pdf`}
-                    className="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg text-center transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download</span>
-                  </a>
-                </div>
-              </div>
-            )}
 
             {onOpenSafetyModal && (
               <button

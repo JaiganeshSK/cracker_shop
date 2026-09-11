@@ -107,18 +107,9 @@ const HomePage = () => {
                 className="btn-gold btn-ripple w-full xs:w-auto px-8 py-3.5 text-sm rounded-xl"
               >
                 <Zap className="w-4 h-4" />
-                Quick Order · Price List
+                Quick Order
               </Link>
-              {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
-                <button
-                  type="button"
-                  onClick={() => setIsPriceListModalOpen(true)}
-                  className="btn-ghost w-full xs:w-auto px-6 py-3.5 text-sm flex items-center justify-center gap-2 text-amber-400 border-amber-500/30 hover:bg-amber-500/10 transition-colors rounded-xl"
-                >
-                  <FileText className="w-4 h-4 text-amber-400" />
-                  <span>Price List (PDF)</span>
-                </button>
-              )}
+
               <Link
                 to="/products"
                 className="btn-ghost w-full xs:w-auto px-8 py-3.5 text-sm rounded-xl"
@@ -167,49 +158,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── WHOLESALE RATE CARD BANNER ────────────────────────────────────── */}
-      {storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="glow-card rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-up">
-            <div className="flex items-center gap-5">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 flex-shrink-0">
-                <FileText className="w-6 h-6 sm:w-7 sm:h-7" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                    {storeSettings.priceListNoticeText || 'Wholesale Price List (PDF)'}
-                  </h3>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider badge-gradient text-amber-400 px-2 py-0.5 rounded">
-                    PDF
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
-                  Official {storeSettings?.shopName || 'Public Store'} catalog with product codes, case packing specifications, and factory wholesale rates.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 w-full md:w-auto flex-shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsPriceListModalOpen(true)}
-                className="btn-gold btn-ripple flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
-              >
-                <Eye className="w-4 h-4" />
-                <span>View Online</span>
-              </button>
-              <a
-                href={storeSettings.priceListUrl}
-                download={storeSettings.priceListFileName || `${storeSettings?.shopName || 'Wholesale'}-Price-List.pdf`}
-                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 hover:border-white/20 transition-all active:scale-95"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download</span>
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── 3. CATEGORIES ────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

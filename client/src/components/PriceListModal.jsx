@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Download, ExternalLink, FileText, Sparkles, Printer } from 'lucide-react';
+import { X, Download, ExternalLink, FileText, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const PriceListModal = ({ isOpen, onClose, customUrl = null, customName = null }) => {
@@ -24,16 +24,6 @@ const PriceListModal = ({ isOpen, onClose, customUrl = null, customName = null }
   }, [isOpen, onClose]);
 
   if (!isOpen || !pdfUrl) return null;
-
-  const handlePrint = () => {
-    const iframe = document.getElementById('price-list-iframe');
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-    } else {
-      window.open(pdfUrl, '_blank');
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
@@ -63,16 +53,6 @@ const PriceListModal = ({ isOpen, onClose, customUrl = null, customName = null }
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 self-end sm:self-center">
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-              title="Print Price List"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print</span>
-            </button>
-
             <a
               href={pdfUrl}
               target="_blank"

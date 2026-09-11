@@ -11,7 +11,7 @@ async function updateAdminCredentials() {
     console.log('[Script] Connecting to MongoDB...');
     await connectDB();
 
-    const username = (process.env.ADMIN_USERNAME || 'admin').toLowerCase().trim();
+    const username = (process.env.ADMIN_USERNAME || 'pradhikacrackers@gmail.com').toLowerCase().trim();
     const newPassword = process.env.ADMIN_PASSWORD || 'Pradhika@123';
 
     let admin = await Admin.findOne({ username });

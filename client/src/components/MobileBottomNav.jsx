@@ -7,8 +7,6 @@ const MobileBottomNav = () => {
   const location = useLocation();
   const { totalItems, subtotal, setIsCartOpen, storeSettings, setIsPriceListModalOpen } = useCart();
 
-  const hasRatePdf = Boolean(storeSettings?.priceListUrl && storeSettings?.showPriceListNotice !== false);
-
   const isActive = (paths) =>
     Array.isArray(paths) ? paths.includes(location.pathname) : location.pathname === paths;
 
@@ -22,7 +20,7 @@ const MobileBottomNav = () => {
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-bottom-nav"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className={`grid ${hasRatePdf ? 'grid-cols-4' : 'grid-cols-3'} items-stretch h-[58px]`}>
+      <div className={`grid grid-cols-3 items-stretch h-[58px]`}>
         {navItems.map((item) => {
           const active = isActive(item.paths);
           const Icon = item.icon;
@@ -51,23 +49,7 @@ const MobileBottomNav = () => {
           );
         })}
 
-        {/* Rate Card PDF button on mobile */}
-        {hasRatePdf && (
-          <button
-            type="button"
-            onClick={() => setIsPriceListModalOpen(true)}
-            className="flex flex-col items-center justify-center h-full gap-1 transition-colors relative text-slate-400 hover:text-amber-400"
-            aria-label="Wholesale Price List PDF"
-          >
-            <div className="relative">
-              <FileText className="w-[18px] h-[18px]" />
-              <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-amber-300 to-amber-500" />
-            </div>
-            <span className="text-[10px] font-semibold leading-none">
-              Price List
-            </span>
-          </button>
-        )}
+
 
         {/* Cart */}
         <button

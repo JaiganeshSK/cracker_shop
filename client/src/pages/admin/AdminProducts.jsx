@@ -24,7 +24,10 @@ import {
   showConfirmDialog,
 } from '../../utils/swal';
 
+import { useCart } from '../../context/CartContext';
+
 const AdminProducts = () => {
+  const { storeSettings } = useCart();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -525,10 +528,11 @@ const AdminProducts = () => {
                     {/* Thumbnail */}
                     <td className="py-2.5 px-4">
                       <img
-                        src={product.imageUrl || '/uploads/products/placeholder.webp'}
+                        src={product.imageUrl || storeSettings?.logoUrl || ''}
                         alt={product.name}
                         className="w-10 h-10 object-cover rounded-lg bg-slate-900 border border-slate-800"
                         loading="lazy"
+                        onError={(e) => { e.target.style.display = 'none'; }}
                       />
                     </td>
 

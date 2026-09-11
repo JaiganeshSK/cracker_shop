@@ -3,7 +3,7 @@ import { Printer, X, Download, Check } from 'lucide-react';
 import InvoiceDocument from './InvoiceDocument';
 import { printInvoice } from '../utils/printInvoice';
 
-const InvoiceModal = ({ isOpen, onClose, order, storeSettings }) => {
+const InvoiceModal = ({ isOpen, onClose, order, storeSettings, showPrint = true }) => {
   const invoiceRef = useRef(null);
 
   if (!isOpen || !order) return null;
@@ -38,14 +38,16 @@ const InvoiceModal = ({ isOpen, onClose, order, storeSettings }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrint}
-              type="button"
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Print Invoice</span>
-            </button>
+            {showPrint && (
+              <button
+                onClick={handlePrint}
+                type="button"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Invoice</span>
+              </button>
+            )}
             <button
               onClick={onClose}
               type="button"
