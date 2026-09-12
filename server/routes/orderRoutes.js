@@ -4,6 +4,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Setting = require('../models/Setting');
 const { protect } = require('../middleware/authMiddleware');
+const { sendOrderConfirmationEmail, sendAdminOrderNotification } = require('../utils/emailSender');
 
 // Helper to generate readable WhatsApp Order Number
 const generateOrderId = () => {
@@ -95,6 +96,12 @@ router.post('/', async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
+
+    // Fire both emails in background — does not block the API response
+    Promise.all([
+      sendOrderConfirmationEmail(savedOrder, setting),
+      sendAdminOrderNotification(savedOrder, setting),
+    ]).catch(err => console.error('[Email] Background send error:', err));
 
     res.status(201).json({
       success: true,
@@ -189,7 +196,7 @@ router.get('/stats', protect, async (req, res) => {
 // @access  Private (Admin)
 router.get('/', protect, async (req, res) => {
   try {
-    const { status, search, limit = 50, page = 1 } = req.query;
+    const { status, search, limit = 50, page = 1, startDate, endDate } = req.query;
     const filter = {};
 
     if (status && status !== 'All') {
@@ -203,6 +210,18 @@ router.get('/', protect, async (req, res) => {
         { 'customer.phone': { $regex: search, $options: 'i' } },
         { 'customer.city': { $regex: search, $options: 'i' } },
       ];
+    }
+
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Set to end of the day
+        filter.createdAt.$lte = end;
+      }
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);

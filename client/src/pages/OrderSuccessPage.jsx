@@ -16,18 +16,53 @@ const OrderSuccessPage = () => {
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   useEffect(() => {
-    // Fire celebratory festive confetti
+    // Professional elegant fireworks — staggered shell bursts with curated palettes
     try {
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 },
-        colors: ['#f59e0b', '#ef4444', '#10b981', '#fbbf24', '#ffffff'],
-      });
+      const palettes = [
+        ['#f59e0b', '#fbbf24', '#fde68a', '#ffffff'],   // gold
+        ['#10b981', '#34d399', '#6ee7b7', '#ffffff'],   // emerald
+        ['#f43f5e', '#fb7185', '#fda4af', '#ffffff'],   // rose
+        ['#818cf8', '#a5b4fc', '#c7d2fe', '#ffffff'],   // indigo
+        ['#f59e0b', '#10b981', '#f43f5e', '#818cf8'],   // mixed
+      ];
+
+      const fireShell = (originX, paletteIdx, delay) => {
+        setTimeout(() => {
+          confetti({
+            particleCount: 80,
+            angle: 90,
+            spread: 55,
+            origin: { x: originX, y: 0.9 },
+            colors: palettes[paletteIdx % palettes.length],
+            startVelocity: 55,
+            gravity: 0.8,
+            ticks: 200,
+            scalar: 1.1,
+            shapes: ['circle', 'square'],
+            zIndex: 9999,
+          });
+        }, delay);
+      };
+
+      // Sequence of elegant shell launches
+      fireShell(0.25, 0, 0);
+      fireShell(0.75, 1, 300);
+      fireShell(0.5,  2, 700);
+      fireShell(0.15, 3, 1200);
+      fireShell(0.85, 4, 1500);
+      fireShell(0.4,  0, 2100);
+      fireShell(0.6,  1, 2400);
+      fireShell(0.5,  2, 3000);
+      // Final grand finale — simultaneous triple burst
+      fireShell(0.25, 0, 3700);
+      fireShell(0.5,  4, 3750);
+      fireShell(0.75, 1, 3800);
     } catch {
       // Ignore if canvas unavailable
     }
+  }, []); // Run once on mount
 
+  useEffect(() => {
     if (!order && orderId) {
       const fetchOrder = async () => {
         try {

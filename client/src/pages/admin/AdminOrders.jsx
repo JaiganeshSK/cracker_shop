@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Printer, Eye, X, MessageSquare } from 'lucide-react';
+import { Search, Printer, Eye, X, MessageSquare, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 import InvoiceModal from '../../components/InvoiceModal';
 import { printInvoice } from '../../utils/printInvoice';
-import { showSuccessToast, showErrorToast } from '../../utils/swal';
+import { showSuccessToast, showErrorToast, showConfirmDialog } from '../../utils/swal';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Selected Order for Modal / Packing Slip
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -30,6 +32,8 @@ const AdminOrders = () => {
       const params = new URLSearchParams();
       if (activeTab !== 'All') params.append('status', activeTab);
       if (searchQuery.trim()) params.append('search', searchQuery.trim());
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
 
       const res = await api.get(`/orders?${params.toString()}`);
       if (res.data.success) {
@@ -44,7 +48,7 @@ const AdminOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, startDate, endDate]);
 
   useEffect(() => {
     api
@@ -137,6 +141,28 @@ const AdminOrders = () => {
     window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank');
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    const result = await showConfirmDialog({
+      title: 'Delete Order?',
+      text: 'Are you sure you want to delete this order? This action cannot be undone.',
+      confirmButtonText: 'Yes, Delete',
+      confirmColor: 'rose',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await api.delete(`/orders/${orderId}`);
+        if (res.data.success) {
+          setOrders((prev) => prev.filter((o) => o._id !== orderId));
+          showSuccessToast('Order deleted successfully');
+        }
+      } catch (err) {
+        console.error('Delete order error:', err);
+        showErrorToast('Failed to delete order');
+      }
+    }
+  };
+
   const tabs = ['All', 'Pending', 'Confirmed', 'Packed', 'Dispatched', 'Delivered', 'Cancelled'];
 
   const getStatusBadge = (status) => {
@@ -188,16 +214,47 @@ const AdminOrders = () => {
           ))}
         </div>
 
-        {/* Search Input */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search by Order ID, name, phone, city..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-          />
+        {/* Search Input and Date Filters */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search by Order ID, name, phone, city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500 color-scheme-dark"
+              title="From Date"
+              style={{ colorScheme: 'dark' }}
+            />
+            <span className="text-slate-500 font-medium">to</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500 color-scheme-dark"
+              title="To Date"
+              style={{ colorScheme: 'dark' }}
+            />
+            {(startDate || endDate) && (
+              <button 
+                onClick={() => { setStartDate(''); setEndDate(''); }}
+                className="ml-1 text-slate-400 hover:text-rose-400 transition-colors p-1"
+                title="Clear Dates"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -321,6 +378,13 @@ const AdminOrders = () => {
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Inspect</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOrder(order._id)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1.5 transition-colors"
+                          title="Delete Order"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
