@@ -133,9 +133,9 @@ const QuickOrderPage = () => {
 
   let globalIndex = 0;
 
-  // ── Bottom bar height: ~80px desktop, ~120px mobile
-  // We need generous pb to not clip content or footer behind the bar
-  const BOTTOM_BAR_PB = totalItems > 0 ? 'pb-56 sm:pb-40' : 'pb-32 sm:pb-24';
+  // ── Bottom bar is always visible; use a fixed generous padding so the page
+  // never jumps/wobbles when the first item is added to the cart.
+  const BOTTOM_BAR_PB = 'pb-44 sm:pb-32';
 
   return (
     <div className={`max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-5 ${BOTTOM_BAR_PB}`}>
@@ -269,7 +269,7 @@ const QuickOrderPage = () => {
         )}
 
         {/* Category Pills — horizontal scroll */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 max-w-full overscroll-x-contain" style={{ touchAction: 'pan-x' }}>
           <button
             type="button"
             onClick={() => setCurrentCategory('All')}
@@ -326,18 +326,18 @@ const QuickOrderPage = () => {
             return (
               <div key={category} className="glow-card rounded-2xl overflow-hidden">
                 {/* Category Header */}
-                <div className="cat-header px-4 sm:px-5 py-3.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
+                <div className="cat-header px-4 sm:px-5 py-3.5 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <span className="w-2 h-2 rounded-full bg-gradient-to-br from-gold-300 to-gold-500 flex-shrink-0" />
-                    <h3 className="text-sm font-black text-gradient-gold uppercase tracking-wider">
+                    <h3 className="text-sm font-black text-gradient-gold uppercase tracking-wider truncate">
                       {category}
                     </h3>
-                    <span className="text-[11px] text-slate-600 font-medium">
+                    <span className="text-[11px] text-slate-600 font-medium flex-shrink-0">
                       ({catItems.length})
                     </span>
                   </div>
                   {catTotal > 0 && (
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 flex-shrink-0 max-w-[120px] truncate">
                       ₹{catTotal.toLocaleString()}
                     </span>
                   )}

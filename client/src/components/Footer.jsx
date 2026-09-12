@@ -16,7 +16,7 @@ const Footer = ({ onOpenSafetyModal }) => {
       backgroundClip: 'padding-box, border-box',
     }}>
       {/* Main Footer Body */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-48 sm:pb-40 md:pb-32 pb-safe">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-36 sm:pb-28 md:pb-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
           {/* Col 1: Brand */}
@@ -178,6 +178,8 @@ const Footer = ({ onOpenSafetyModal }) => {
           </div>
         </div>
       </div>
+      {/* Safe-area spacer for iPhone home bar — kept separate so it never overrides pb-36 above */}
+      <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} aria-hidden="true" />
     </footer>
   );
 };

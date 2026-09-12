@@ -20,8 +20,11 @@ const Navbar = ({ onOpenSafetyModal }) => {
     <header className="sticky top-0 z-40 w-full glass-nav" style={{ boxShadow: '0 1px 0 rgba(255,255,255,0.05), 0 4px 24px -4px rgba(0,0,0,0.4)' }}>
       {/* Announcement Bar */}
       {storeSettings.isAnnouncementActive && (
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#b8860b] via-[#d4a017] to-[#b8860b] text-[#060b15] text-xs py-2 flex font-bold">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-12 pr-12">
+        <div
+          className="relative overflow-hidden bg-gradient-to-r from-[#b8860b] via-[#d4a017] to-[#b8860b] text-[#060b15] text-xs py-2 flex font-bold"
+          style={{ contain: 'paint', maxWidth: '100vw' }}
+        >
+          <div className="animate-marquee whitespace-nowrap flex items-center gap-12 pr-12 will-change-transform">
             <span className="flex items-center gap-2 tracking-wide font-extrabold">
               <Flame className="w-3.5 h-3.5 inline-block fill-current" />
               {storeSettings.announcementText}
@@ -43,12 +46,12 @@ const Navbar = ({ onOpenSafetyModal }) => {
       {/* Main Navigation */}
       <div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16 gap-4">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
 
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
+            {/* Logo — min-w-0 lets it shrink when space is tight */}
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-w-0 max-w-[55%] xs:max-w-none">
               {storeSettings.logoUrl ? (
-                <div className="h-9 sm:h-10 max-w-[130px] flex items-center flex-shrink-0">
+                <div className="h-9 sm:h-10 max-w-[120px] flex items-center flex-shrink-0">
                   <img
                     src={storeSettings.logoUrl}
                     alt={storeSettings.shopName || 'Store Logo'}
@@ -61,12 +64,12 @@ const Navbar = ({ onOpenSafetyModal }) => {
                   <Flame className="w-4 h-4 text-surface-base" />
                 </div>
               )}
-              <div className="min-w-0">
-                <div className="font-extrabold text-sm sm:text-[15px] tracking-tight text-white leading-tight">
+              <div className="min-w-0 overflow-hidden">
+                <div className="font-extrabold text-sm sm:text-[15px] tracking-tight text-white leading-tight truncate">
                   {storeSettings.shopName || 'Public Store'}
                 </div>
-                <div className="text-[10px] text-gold-400/90 font-semibold tracking-wider uppercase leading-tight truncate max-w-[160px] sm:max-w-[220px]">
-                  {storeSettings.tagline ? storeSettings.tagline.slice(0, 32) : 'Sivakasi Direct'}
+                <div className="text-[10px] text-gold-400/90 font-semibold tracking-wider uppercase leading-tight truncate max-w-[120px] sm:max-w-[220px]">
+                  {storeSettings.tagline ? storeSettings.tagline.slice(0, 28) : 'Sivakasi Direct'}
                 </div>
               </div>
             </Link>
@@ -104,8 +107,8 @@ const Navbar = ({ onOpenSafetyModal }) => {
 
             </nav>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-2">
+            {/* Right Actions — flex-shrink-0 ensures this group NEVER gets squashed */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               {/* WhatsApp — desktop only */}
               <a
                 href={`https://wa.me/${String(storeSettings?.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${storeSettings?.shopName || 'Store'}, I want to place an order`)}`}
@@ -120,24 +123,23 @@ const Navbar = ({ onOpenSafetyModal }) => {
               {/* Admin Portal */}
               <Link
                 to="/admin/login"
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-white border border-slate-800 hover:border-slate-700 hover:bg-white/5 transition-all"
+                className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-white border border-slate-800 hover:border-slate-700 hover:bg-white/5 transition-all flex-shrink-0"
                 title="Admin Portal Login"
               >
                 <Lock className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Admin</span>
               </Link>
 
-
-              {/* Cart Button */}
+              {/* Cart Button — flex-shrink-0 so it never pushes hamburger off screen */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="btn-ripple relative flex items-center gap-2 btn-gold px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm"
+                className="btn-ripple relative flex items-center gap-1.5 sm:gap-2 btn-gold px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm flex-shrink-0"
                 aria-label="View shopping cart"
               >
                 <ShoppingBag className="w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0" />
                 <span className="hidden sm:inline font-bold">Cart</span>
                 {totalItems > 0 && (
-                  <span className="badge-bounce relative flex items-center justify-center bg-surface-base text-gold-400 text-[10px] font-black min-w-[18px] h-[18px] px-1 rounded-full">
+                  <span className="badge-bounce relative flex items-center justify-center bg-surface-base text-gold-400 text-[10px] font-black min-w-[22px] h-[18px] px-1 rounded-full">
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
                 )}
@@ -148,10 +150,10 @@ const Navbar = ({ onOpenSafetyModal }) => {
                 )}
               </button>
 
-              {/* Mobile Hamburger */}
+              {/* Mobile Hamburger — flex-shrink-0 so it's ALWAYS visible */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors flex-shrink-0"
                 aria-label="Toggle Navigation Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

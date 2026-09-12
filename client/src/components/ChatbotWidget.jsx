@@ -55,10 +55,10 @@ const ChatbotWidget = () => {
   }
 
   return (
-    <div ref={widgetRef} className="fixed bottom-20 md:bottom-6 right-3 md:right-6 z-40 no-print font-sans">
+    <div ref={widgetRef} className="fixed bottom-20 md:bottom-6 right-2 sm:right-4 md:right-6 z-40 no-print font-sans">
       {/* ── Quick Contact Popover Window ───────────────────────────────── */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-[320px] sm:w-[350px] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
+        <div className="absolute bottom-16 right-0 w-[calc(100vw-1rem)] max-w-[320px] sm:w-[350px] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
           {/* Header */}
           <div className="bg-slate-950 px-4 py-3.5 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">

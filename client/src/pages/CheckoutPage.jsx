@@ -241,7 +241,7 @@ const CheckoutPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pb-24">
       {/* Top Navigation & Breadcrumbs */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-amber-400 transition-colors"
@@ -267,7 +267,8 @@ const CheckoutPage = () => {
             <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black flex items-center justify-center text-[10px]">
               2
             </span>
-            <span>Delivery &amp; Contact</span>
+            <span className="hidden xs:inline">Details</span>
+            <span className="hidden sm:inline text-slate-400">/ Delivery</span>
           </div>
           <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
           <div className="flex items-center gap-1.5 text-slate-500">
@@ -277,6 +278,22 @@ const CheckoutPage = () => {
             <span className="hidden sm:inline">WhatsApp Order</span>
           </div>
         </div>
+      </div>
+
+      {/* Mobile-only Order Summary Strip */}
+      <div className="lg:hidden glass-panel rounded-2xl border border-white/10 p-4 mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+            <ShoppingBag className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs text-slate-400">{totalItems} items · Saved <span className="text-emerald-400 font-bold">₹{totalSavings.toLocaleString()}</span></div>
+            <div className="text-base font-extrabold text-amber-400">₹{grandTotal.toLocaleString()}</div>
+          </div>
+        </div>
+        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20 flex-shrink-0">
+          {savingsPercent}% OFF
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

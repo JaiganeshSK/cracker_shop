@@ -216,40 +216,46 @@ const AdminOrders = () => {
 
         {/* Search Input and Date Filters */}
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search by Order ID, name, phone, city..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-            />
+          <div className="relative w-full max-w-md flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Search Orders</label>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Search by Order ID, name, phone, city..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              />
+            </div>
           </div>
           
-          <div className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500 color-scheme-dark"
-              title="From Date"
-              style={{ colorScheme: 'dark' }}
-            />
-            <span className="text-slate-500 font-medium">to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500 color-scheme-dark"
-              title="To Date"
-              style={{ colorScheme: 'dark' }}
-            />
+          <div className="flex items-end gap-2 w-full sm:w-auto text-xs sm:text-sm flex-wrap">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">From</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">To</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
             {(startDate || endDate) && (
-              <button 
+              <button
                 onClick={() => { setStartDate(''); setEndDate(''); }}
-                className="ml-1 text-slate-400 hover:text-rose-400 transition-colors p-1"
-                title="Clear Dates"
+                className="mb-0.5 text-slate-400 hover:text-rose-400 transition-colors p-2 rounded-lg hover:bg-rose-500/10"
+                title="Clear date filter"
               >
                 <X className="w-4 h-4" />
               </button>

@@ -1,14 +1,4 @@
 const mongoose = require('mongoose');
-const dns = require('dns');
-
-// Only configure custom DNS in local development on Windows if needed, never in serverless cloud
-if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
-  try {
-    dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
-  } catch (e) {
-    // Ignore if not supported
-  }
-}
 
 // Global cached connection across serverless invocations
 let cached = global.mongoose;
@@ -43,9 +33,9 @@ const connectDB = async () => {
       bufferCommands: false, // Do not buffer indefinitely in serverless
       maxPoolSize: 10,
       minPoolSize: 1,
-      serverSelectionTimeoutMS: 5000, // 5s fail fast instead of 15s freeze
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 20000,
-      connectTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
     };
 
     cached.promise = mongoose.connect(uri, opts).then((mongooseInstance) => {

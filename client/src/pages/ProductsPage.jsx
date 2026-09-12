@@ -248,7 +248,7 @@ const ProductsPage = () => {
         )}
 
         {/* Category Pills — horizontal scroll */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 max-w-full overscroll-x-contain" style={{ touchAction: 'pan-x' }}>
           <button
             onClick={() => handleCategoryChange('All')}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 ${

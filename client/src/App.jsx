@@ -79,7 +79,7 @@ const AppContent = () => {
   }, [location.pathname, storeSettings?.shopName, storeSettings?.tagline, storeSettings?.logoUrl]);
 
   return (
-    <div className="min-h-screen flex flex-col relative selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen flex flex-col relative selection:bg-amber-500 selection:text-slate-950 overflow-x-hidden w-full">
       {/* Lightweight Festive Particle Glow Effect */}
       {!isAdminRoute && <SparkleGlow />}
 

@@ -279,7 +279,7 @@ const SparkleGlow = () => {
   return (
     <div 
       ref={mountRef} 
-      className="fixed inset-0 pointer-events-none z-0" 
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden" 
       aria-hidden="true"
       style={{ backgroundColor: '#050505' }}
     />

@@ -37,8 +37,8 @@ const CartDrawer = () => {
       />
 
       {/* Drawer Panel */}
-      <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-surface-card border-l border-white/[0.06] shadow-2xl flex flex-col animate-drawer-in">
+      <div className="absolute inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+        <div className="w-screen max-w-sm sm:max-w-md bg-surface-card border-l border-white/[0.06] shadow-2xl flex flex-col animate-drawer-in">
 
           {/* Header */}
           <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between flex-shrink-0">

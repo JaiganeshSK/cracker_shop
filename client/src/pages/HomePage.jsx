@@ -101,7 +101,7 @@ const HomePage = () => {
             </p>
 
             {/* CTA Buttons */}
-            <div className="animate-fade-up-3 flex flex-col xs:flex-row items-center justify-center gap-3 mb-14">
+            <div className="animate-fade-up-3 flex flex-col xs:flex-row items-center justify-center gap-3 mb-8 sm:mb-14">
               <Link
                 to="/quick-order"
                 className="btn-gold btn-ripple w-full xs:w-auto px-8 py-3.5 text-sm rounded-xl"
@@ -143,13 +143,13 @@ const HomePage = () => {
 
       {/* ── 2. KEY FACTS STRIP ───────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4">
           {[
             { icon: Factory, label: 'Factory Direct',   sub: 'No middleman markup',  color: 'text-gold-400',    idx: 1 },
             { icon: Leaf,    label: 'Green Certified',  sub: 'Eco-safe fireworks',   color: 'text-emerald-400', idx: 2 },
             { icon: Zap,     label: 'Instant Booking',  sub: 'Order ready in 2 min', color: 'text-blue-400',    idx: 3 },
           ].map((item) => (
-            <div key={item.label} className={`glow-card rounded-xl p-5 text-center animate-fade-up-${item.idx}`}>
+            <div key={item.label} className={`glow-card rounded-xl p-4 sm:p-5 text-center animate-fade-up-${item.idx}`}>
               <item.icon className={`w-6 h-6 ${item.color} mx-auto mb-3`} />
               <div className="text-sm font-bold text-white">{item.label}</div>
               <div className="text-xs text-slate-500 mt-1">{item.sub}</div>
