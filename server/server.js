@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 dotenv.config();
 
 // Initialize MongoDB connection
-connectDB();
+connectDB().catch(err => console.error('Initial DB connection failed:', err.message));
 
 const app = express();
 
