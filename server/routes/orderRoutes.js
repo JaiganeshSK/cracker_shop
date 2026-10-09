@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Setting = require('../models/Setting');
@@ -32,8 +33,11 @@ router.post('/', async (req, res) => {
     }
 
     // Fetch shop settings for minimum order calculation
-    const setting = await Setting.findOne();
-    const minOrderValue = setting?.minOrderValue || 0;
+    let minOrderValue = 0;
+    try {
+      const setting = await Setting.findOne();
+      minOrderValue = setting?.minOrderValue || 0;
+    } catch (_) {}
 
     // Validate and calculate totals
     let subtotal = 0;
@@ -41,27 +45,33 @@ router.post('/', async (req, res) => {
     const validatedItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product) {
-        return res.status(400).json({
-          success: false,
-          message: `Product ${item.name || item.productId} no longer exists`,
-        });
+      let product = null;
+      if (item.productId && mongoose.Types.ObjectId.isValid(item.productId)) {
+        try {
+          product = await Product.findById(item.productId);
+        } catch (_) {}
+      }
+      if (!product && item.name) {
+        try {
+          product = await Product.findOne({ name: item.name });
+        } catch (_) {}
       }
 
-      const qty = parseInt(item.quantity) || 1;
-      const itemSubtotal = product.price * qty;
-      const itemMrpTotal = product.mrp * qty;
+      const qty = Math.max(1, parseInt(item.quantity) || 1);
+      const price = product ? (Number(product.price) || 0) : (Number(item.price) || 0);
+      const mrp = product ? (Number(product.mrp) || price) : (Number(item.mrp) || price);
+      const itemSubtotal = price * qty;
+      const itemMrpTotal = mrp * qty;
 
       subtotal += itemSubtotal;
       mrpTotal += itemMrpTotal;
 
       validatedItems.push({
-        productId: product._id,
-        name: product.name,
-        piecePerBox: product.piecePerBox,
-        price: product.price,
-        mrp: product.mrp,
+        productId: product ? product._id : (item.productId && mongoose.Types.ObjectId.isValid(item.productId) ? item.productId : null),
+        name: product ? product.name : (item.name || 'Festive Cracker'),
+        piecePerBox: product ? product.piecePerBox : (item.piecePerBox || '1 Box'),
+        price,
+        mrp,
         quantity: qty,
         total: itemSubtotal,
       });

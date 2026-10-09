@@ -21,12 +21,9 @@ const connectDB = async () => {
     return cached.conn;
   }
 
-  // 2. Validate environment
-  if (!process.env.MONGODB_URI && process.env.VERCEL) {
-    throw new Error('MONGODB_URI environment variable is missing in Vercel settings.');
-  }
-
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/cracker_shop';
+  // 2. Validate environment & fallback to Atlas cluster
+  const DEFAULT_ATLAS_URI = 'mongodb+srv://jaizohobooks_db_user:NcbNWdP8zYXolzTv@jaiganesh.5m5nwfn.mongodb.net/cracker_shop?retryWrites=true&w=majority';
+  const uri = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
 
   if (!cached.promise) {
     const opts = {

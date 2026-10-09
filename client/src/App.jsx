@@ -13,6 +13,7 @@ import PriceListModal from './components/PriceListModal';
 import SparkleGlow from './components/SparkleGlow';
 import ChatbotWidget from './components/ChatbotWidget';
 import DisclaimerModal from './components/DisclaimerModal';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Store Pages
 import HomePage from './pages/HomePage';
@@ -90,45 +91,47 @@ const AppContent = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 relative z-10">
-        <Routes>
-          {/* Customer Storefront Routes - Quick Order as Default */}
-          <Route path="/" element={<QuickOrderPage />} />
-          <Route path="/quick-order" element={<QuickOrderPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/catalog" element={<ProductsPage />} />
-          <Route path="/showcase" element={<HomePage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
-          <Route path="/track-order" element={<Navigate to="/" replace />} />
+        <ErrorBoundary>
+          <Routes>
+            {/* Customer Storefront Routes - Quick Order as Default */}
+            <Route path="/" element={<QuickOrderPage />} />
+            <Route path="/quick-order" element={<QuickOrderPage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/catalog" element={<ProductsPage />} />
+            <Route path="/showcase" element={<HomePage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
+            <Route path="/track-order" element={<Navigate to="/" replace />} />
 
-          {/* Admin Routes (Lazy Loaded) */}
-          <Route
-            path="/admin/login"
-            element={
-              <React.Suspense fallback={<div className="min-h-screen bg-[#070a12] flex items-center justify-center text-xs font-semibold text-amber-400">Loading portal...</div>}>
-                <AdminLogin />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <React.Suspense fallback={<div className="min-h-screen bg-[#070a12] flex items-center justify-center text-xs font-semibold text-amber-400">Loading portal...</div>}>
-                <AdminLayout />
-              </React.Suspense>
-            }
-          >
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
+            {/* Admin Routes (Lazy Loaded) */}
+            <Route
+              path="/admin/login"
+              element={
+                <React.Suspense fallback={<div className="min-h-screen bg-[#070a12] flex items-center justify-center text-xs font-semibold text-amber-400">Loading portal...</div>}>
+                  <AdminLogin />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <React.Suspense fallback={<div className="min-h-screen bg-[#070a12] flex items-center justify-center text-xs font-semibold text-amber-400">Loading portal...</div>}>
+                  <AdminLayout />
+                </React.Suspense>
+              }
+            >
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </ErrorBoundary>
       </div>
 
       {/* Customer Footer */}

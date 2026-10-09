@@ -10,7 +10,16 @@ const OrderSuccessPage = () => {
   const { orderId } = useParams();
   const location = useLocation();
   const { storeSettings } = useCart();
-  const [order, setOrder] = useState(location.state?.order || null);
+  const [order, setOrder] = useState(location.state?.order || (() => {
+    try {
+      const saved = (orderId ? localStorage.getItem(`order_${orderId}`) : null) || localStorage.getItem('cracker_last_order');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!orderId || parsed.orderId === orderId) return parsed;
+      }
+    } catch (_) {}
+    return null;
+  }));
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(!order);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
@@ -69,9 +78,16 @@ const OrderSuccessPage = () => {
           const res = await api.get(`/orders/track/${orderId}`);
           if (res.data.success && res.data.orders?.length > 0) {
             setOrder(res.data.orders[0]);
+          } else {
+            const saved = localStorage.getItem(`order_${orderId}`) || localStorage.getItem('cracker_last_order');
+            if (saved) setOrder(JSON.parse(saved));
           }
         } catch (err) {
-          console.error('Failed to fetch order:', err);
+          console.error('Failed to fetch order from API, checking local storage:', err);
+          try {
+            const saved = localStorage.getItem(`order_${orderId}`) || localStorage.getItem('cracker_last_order');
+            if (saved) setOrder(JSON.parse(saved));
+          } catch (_) {}
         } finally {
           setLoading(false);
         }

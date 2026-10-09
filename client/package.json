@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/verify-code.cjs",
     "build": "vite build",
+    "lint": "node scripts/verify-code.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

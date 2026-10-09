@@ -7,15 +7,50 @@
     <meta name="theme-color" content="#080c14" />
     <meta name="description" content="Direct Sivakasi Factory Fireworks & Crackers Online Store. Premium Quality, Green Crackers, 80% Off Festival Discounts, Quick Order Price List." />
     <title>Factory Direct Cracker Store</title>
+    <!-- Open Graph & Social Share Preview (WhatsApp, Facebook, Telegram, iMessage, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Festive Spark Fireworks" />
+    <meta property="og:title" content="Festive Spark Fireworks | Direct Sivakasi Wholesale" />
+    <meta property="og:description" content="Direct Sivakasi Factory Fireworks & Crackers Online Store. Premium Quality Green Crackers, 80% Off Festival Discounts, Quick Order Price List." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:secure_url" content="/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Festive Spark Fireworks Sivakasi" />
+
+    <!-- Twitter Card Preview -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Festive Spark Fireworks | Direct Sivakasi Wholesale" />
+    <meta name="twitter:description" content="Direct Sivakasi Factory Fireworks & Crackers Online Store. Premium Quality Green Crackers, 80% Off Festival Discounts, Quick Order Price List." />
+    <meta name="twitter:image" content="/og-image.png" />
+
+    <!-- Fallback image link for scrapers -->
+    <link rel="image_src" href="/og-image.png" />
+
     <script>
       try {
         var _s = JSON.parse(localStorage.getItem('cracker_store_settings') || '{}');
+        var _origin = window.location.origin || '';
         if (_s && _s.shopName) {
-          document.title = _s.tagline ? _s.shopName + ' | ' + _s.tagline : _s.shopName + ' | Factory Direct Cracker Store';
+          var _title = _s.tagline ? _s.shopName + ' | ' + _s.tagline : _s.shopName + ' | Factory Direct Cracker Store';
+          document.title = _title;
+          var _ogTitle = document.querySelector("meta[property='og:title']");
+          if (_ogTitle) _ogTitle.setAttribute('content', _title);
+          var _ogSiteName = document.querySelector("meta[property='og:site_name']");
+          if (_ogSiteName) _ogSiteName.setAttribute('content', _s.shopName);
         }
-        if (_s && _s.logoUrl) {
+        var _img = (_s && _s.logoUrl) ? _s.logoUrl : '/og-image.png';
+        if (_img) {
+          var _fullImg = _img.indexOf('http') === 0 ? _img : _origin + (_img.charAt(0) === '/' ? '' : '/') + _img;
+          var _ogImg = document.querySelector("meta[property='og:image']");
+          if (_ogImg && !_ogImg.getAttribute('content').startsWith('http')) _ogImg.setAttribute('content', _fullImg);
+          var _ogSecImg = document.querySelector("meta[property='og:image:secure_url']");
+          if (_ogSecImg && !_ogSecImg.getAttribute('content').startsWith('http')) _ogSecImg.setAttribute('content', _fullImg);
+          var _twImg = document.querySelector("meta[name='twitter:image']");
+          if (_twImg && !_twImg.getAttribute('content').startsWith('http')) _twImg.setAttribute('content', _fullImg);
           var _fav = document.querySelector("link[rel*='icon']");
-          if (_fav) _fav.href = _s.logoUrl;
+          if (_fav && _s && _s.logoUrl) _fav.href = _s.logoUrl;
         }
       } catch (e) {}
     </script>

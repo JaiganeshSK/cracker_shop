@@ -24,7 +24,10 @@ const CartDrawer = () => {
 
   const handleWhatsAppClick = () => {
     const msg = generateWhatsAppMessage();
-    const url = `https://wa.me/${storeSettings.whatsapp}?text=${msg}`;
+    const rawPhone = storeSettings?.whatsapp || '916369050467';
+    let clean = String(rawPhone).replace(/\D/g, '');
+    if (clean.length === 10) clean = '91' + clean;
+    const url = `https://wa.me/${clean}?text=${msg}`;
     window.open(url, '_blank');
   };
 

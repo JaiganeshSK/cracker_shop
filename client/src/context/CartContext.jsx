@@ -72,18 +72,45 @@ export const CartProvider = ({ children }) => {
     refreshSettings();
   }, []);
 
-  // Dynamically update browser tab title and favicon based on shop settings
+  // Dynamically update browser tab title, favicon, and social share preview tags based on shop settings
   useEffect(() => {
-    if (storeSettings?.shopName) {
-      document.title = storeSettings.tagline
-        ? `${storeSettings.shopName} | ${storeSettings.tagline}`
-        : `${storeSettings.shopName} | Factory Direct Cracker Store`;
-    }
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const shopName = storeSettings?.shopName || 'Festive Spark Fireworks';
+    const pageTitle = storeSettings?.tagline
+      ? `${shopName} | ${storeSettings.tagline}`
+      : `${shopName} | Factory Direct Cracker Store`;
+
+    document.title = pageTitle;
+
+    // Update Open Graph and Twitter card titles
+    const ogTitle = document.querySelector("meta[property='og:title']");
+    if (ogTitle) ogTitle.setAttribute('content', pageTitle);
+
+    const ogSiteName = document.querySelector("meta[property='og:site_name']");
+    if (ogSiteName) ogSiteName.setAttribute('content', shopName);
+
+    const twTitle = document.querySelector("meta[name='twitter:title']");
+    if (twTitle) twTitle.setAttribute('content', pageTitle);
+
     if (storeSettings?.logoUrl) {
+      const fullLogoUrl = storeSettings.logoUrl.startsWith('http')
+        ? storeSettings.logoUrl
+        : `${origin}${storeSettings.logoUrl.startsWith('/') ? '' : '/'}${storeSettings.logoUrl}`;
+
       const faviconLink = document.querySelector("link[rel*='icon']");
-      if (faviconLink) {
-        faviconLink.href = storeSettings.logoUrl;
-      }
+      if (faviconLink) faviconLink.href = storeSettings.logoUrl;
+
+      const ogImage = document.querySelector("meta[property='og:image']");
+      if (ogImage) ogImage.setAttribute('content', fullLogoUrl);
+
+      const ogSecImage = document.querySelector("meta[property='og:image:secure_url']");
+      if (ogSecImage) ogSecImage.setAttribute('content', fullLogoUrl);
+
+      const twImage = document.querySelector("meta[name='twitter:image']");
+      if (twImage) twImage.setAttribute('content', fullLogoUrl);
+
+      const imgHref = document.querySelector("link[rel='image_src']");
+      if (imgHref) imgHref.setAttribute('href', fullLogoUrl);
     }
   }, [storeSettings?.shopName, storeSettings?.tagline, storeSettings?.logoUrl]);
 

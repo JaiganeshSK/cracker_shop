@@ -13,19 +13,32 @@ connectDB().catch(err => console.error('Initial DB connection failed:', err.mess
 
 const app = express();
 
-// Middlewares
+// Trust proxy for Vercel and reverse proxies
+app.set('trust proxy', 1);
+
+// URL normalization for Vercel Serverless Functions
+app.use((req, res, next) => {
+  const matched = req.headers['x-matched-path'] || req.headers['x-now-route-matches'];
+  if (matched && (req.url === '/api/index.js' || req.url.startsWith('/api/index.js'))) {
+    req.url = matched;
+  }
+  next();
+});
+
+// Middlewares - allow request origin dynamically so Vercel preview & production URLs succeed
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173', // Only allow specified client URL or local dev
+  origin: true,
   credentials: true,
 }));
 
-// Apply global rate limiting to all API routes
+// Apply global rate limiting to API routes
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
+  max: 300, // Limit requests per window
+  message: { success: false, message: 'Too many requests, please try again after a few minutes' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
 });
 
 app.use('/api', apiLimiter);
@@ -41,9 +54,18 @@ app.use('/uploads', express.static(uploadsPath, {
 }));
 
 // Ensure DB is connected before handling API routes in serverless
-app.use('/api', async (req, res, next) => {
-  // Allow health check to run without blocking, so user can diagnose DB issues
-  if (req.path === '/health') return next();
+app.use(async (req, res, next) => {
+  const isApi = req.path.startsWith('/api') ||
+                req.path.startsWith('/orders') ||
+                req.path.startsWith('/products') ||
+                req.path.startsWith('/categories') ||
+                req.path.startsWith('/auth') ||
+                req.path.startsWith('/settings') ||
+                req.path.startsWith('/upload');
+
+  if (!isApi || req.path === '/api/health' || req.path === '/health') {
+    return next();
+  }
 
   try {
     await connectDB();
@@ -52,7 +74,7 @@ app.use('/api', async (req, res, next) => {
     console.error('Database connection failed in API middleware:', err.message);
     return res.status(500).json({
       success: false,
-      message: 'Database connection failed. Please check MONGODB_URI in Vercel settings and allow 0.0.0.0/0 in MongoDB Atlas.',
+      message: 'Database connection failed. Please check MongoDB Atlas network access (allow 0.0.0.0/0).',
       error: err.message,
     });
   }
@@ -102,15 +124,48 @@ app.use('/orders', require('./routes/orderRoutes'));
 app.use('/upload', require('./routes/uploadRoutes'));
 app.use('/settings', require('./routes/settingRoutes'));
 
-// Production: Serve React client build from client/dist
+// Production: Serve React client build from client/dist with dynamic Open Graph injection for WhatsApp/Social share
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/dist');
+  const indexPath = path.join(clientBuildPath, 'index.html');
+  const fs = require('fs');
+  const Setting = require('./models/Setting');
+
   app.use(express.static(clientBuildPath));
 
-  app.get('*', (req, res) => {
+  app.get('*', async (req, res) => {
     // If request does not start with /api or /uploads, serve React index.html
     if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
-      res.sendFile(path.join(clientBuildPath, 'index.html'));
+      try {
+        if (!fs.existsSync(indexPath)) {
+          return res.status(404).send('Application build not found.');
+        }
+
+        let html = fs.readFileSync(indexPath, 'utf8');
+        const host = req.get('host') || 'localhost:5000';
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+        const origin = `${protocol}://${host}`;
+
+        // Fetch store settings from MongoDB
+        const setting = await Setting.findOne().catch(() => null);
+        const shopName = setting?.shopName || 'Festive Spark Fireworks';
+        const tagline = setting?.tagline || 'Direct Sivakasi Factory Fireworks & Crackers';
+        const logoUrl = setting?.logoUrl || `${origin}/og-image.png`;
+        const fullLogoUrl = logoUrl.startsWith('http') ? logoUrl : `${origin}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
+
+        // Inject absolute Open Graph tags so WhatsApp, Facebook, iMessage crawlers display rich logo cards
+        html = html
+          .replace(/<title>.*?<\/title>/, `<title>${shopName} | ${tagline}</title>`)
+          .replaceAll('%VITE_SITE_URL%/og-image.png', fullLogoUrl)
+          .replaceAll('/og-image.png', fullLogoUrl)
+          .replaceAll('/asmi-tech-logo.png', fullLogoUrl);
+
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+      } catch (err) {
+        console.error('Error serving index.html with OG tags:', err);
+        res.sendFile(indexPath);
+      }
     } else {
       res.status(404).json({ success: false, message: 'Resource not found' });
     }
@@ -136,7 +191,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && require.main === module) {
   const server = app.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`🧨 Cracker Shop Server running on port ${PORT}`);

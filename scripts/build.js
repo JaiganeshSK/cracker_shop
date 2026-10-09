@@ -8,7 +8,11 @@ console.log('📦 Starting full-stack production build...');
 console.log('📥 Installing client dependencies...');
 execSync('npm install', { cwd: path.join(__dirname, '../client'), stdio: 'inherit' });
 
-// 2. Build Vite React client
+// 2. Validate client codebase for missing imports / undefined JSX components
+console.log('🔍 Validating client JSX components & imports...');
+execSync('node scripts/verify-code.cjs', { cwd: path.join(__dirname, '../client'), stdio: 'inherit' });
+
+// 3. Build Vite React client
 console.log('⚡ Building Vite React bundle...');
 execSync('npm run build', { cwd: path.join(__dirname, '../client'), stdio: 'inherit' });
 
