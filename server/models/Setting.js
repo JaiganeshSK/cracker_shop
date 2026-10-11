@@ -4,15 +4,15 @@ const settingSchema = new mongoose.Schema(
   {
     shopName: {
       type: String,
-      default: 'Festive Spark Fireworks',
+      default: 'Pradhika Crackers',
     },
     logoUrl: {
       type: String,
-      default: '',
+      default: '/images/pradhika-banner.jpg',
     },
     tagline: {
       type: String,
-      default: 'Direct from Sivakasi Factory • Premium Green Crackers',
+      default: 'Lights | Celebration | Joy • Sivakasi Factory Direct',
     },
     phone: {
       type: String,

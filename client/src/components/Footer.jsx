@@ -63,7 +63,13 @@ const Footer = ({ onOpenSafetyModal }) => {
             <h4 className="text-xs font-bold text-slate-200 uppercase tracking-widest mb-4">Quick Links</h4>
             <ul className="space-y-3 text-xs">
               <li>
-                <Link to="/" className="flex items-center gap-2 text-gold-400 hover:text-gold-300 font-semibold transition-colors">
+                <Link to="/" className="flex items-center gap-2 text-slate-300 hover:text-gold-400 font-semibold transition-colors">
+                  <Flame className="w-3.5 h-3.5 text-gold-400" />
+                  Home Showcase
+                </Link>
+              </li>
+              <li>
+                <Link to="/quick-order" className="flex items-center gap-2 text-gold-400 hover:text-gold-300 font-semibold transition-colors">
                   <ListOrdered className="w-3.5 h-3.5" />
                   Quick Order Sheet
                 </Link>

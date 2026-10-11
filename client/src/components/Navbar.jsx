@@ -10,7 +10,8 @@ const Navbar = ({ onOpenSafetyModal }) => {
   const location = useLocation();
 
   const navLinks = [
-    { to: '/',          label: 'Quick Order', icon: ListOrdered, match: ['/', '/quick-order'] },
+    { to: '/',          label: 'Home',        icon: Flame,       match: ['/', '/home', '/showcase'] },
+    { to: '/quick-order', label: 'Quick Order', icon: ListOrdered, match: ['/quick-order'] },
     { to: '/products',  label: 'Catalog',     icon: LayoutGrid,  match: ['/products', '/catalog'] },
   ];
 
@@ -66,10 +67,10 @@ const Navbar = ({ onOpenSafetyModal }) => {
               )}
               <div className="min-w-0 overflow-hidden">
                 <div className="font-extrabold text-sm sm:text-[15px] tracking-tight text-white leading-tight truncate">
-                  {storeSettings.shopName || 'Public Store'}
+                  {storeSettings.shopName || 'Pradhika Crackers'}
                 </div>
                 <div className="text-[10px] text-gold-400/90 font-semibold tracking-wider uppercase leading-tight truncate max-w-[120px] sm:max-w-[220px]">
-                  {storeSettings.tagline ? storeSettings.tagline.slice(0, 28) : 'Sivakasi Direct'}
+                  {storeSettings.tagline ? storeSettings.tagline.slice(0, 32) : 'Lights | Celebration | Joy'}
                 </div>
               </div>
             </Link>
@@ -168,6 +169,15 @@ const Navbar = ({ onOpenSafetyModal }) => {
 
             <Link
               to="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-white hover:bg-white/5 transition-colors"
+            >
+              <Flame className="w-4 h-4 text-gold-400 flex-shrink-0" />
+              <span>Home Showcase</span>
+            </Link>
+
+            <Link
+              to="/quick-order"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-lg font-bold text-sm text-surface-base bg-gold-400 hover:bg-gold-300 transition-colors"
             >

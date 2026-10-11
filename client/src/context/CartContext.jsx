@@ -31,9 +31,10 @@ export const CartProvider = ({ children }) => {
       freeDeliveryAbove: 0,
       defaultDeliveryFee: 0,
       whatsapp: '',
-      shopName: 'Public Store',
-      logoUrl: '',
-      announcementText: '',
+      shopName: 'Pradhika Crackers',
+      tagline: 'Lights | Celebration | Joy • Sivakasi Factory Direct',
+      logoUrl: '/images/pradhika-banner.jpg',
+      announcementText: '💥 Diwali Mega Booking Open! Flat 80% Off • CSIR-NEERI Green Certified Crackers',
       isAnnouncementActive: true,
       priceListUrl: '',
       priceListFileName: '',
@@ -42,7 +43,7 @@ export const CartProvider = ({ children }) => {
       priceListNoticeText: '💥 Diwali 2026 Wholesale Rate Card Available - View & Download PDF',
       instagram: '',
       showChatWidget: true,
-      chatWidgetGreeting: '',
+      chatWidgetGreeting: 'Welcome to Pradhika Crackers! How can we help light up your Diwali?',
     };
   });
 

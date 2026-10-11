@@ -43,8 +43,10 @@ const AppContent = () => {
     const path = location.pathname;
 
     let pageTitle = '';
-    if (path === '/' || path === '/quick-order') {
-      pageTitle = storeSettings?.tagline ? `${shopName} | ${storeSettings.tagline}` : `${shopName} | Sivakasi Direct Wholesale`;
+    if (path === '/' || path === '/home' || path === '/showcase') {
+      pageTitle = storeSettings?.tagline ? `${shopName} | ${storeSettings.tagline}` : `${shopName} | Lights • Celebration • Joy`;
+    } else if (path === '/quick-order') {
+      pageTitle = `Quick Order Wholesale Price List | ${shopName}`;
     } else if (path.startsWith('/admin/dashboard')) {
       pageTitle = `Admin Dashboard | ${shopName}`;
     } else if (path.startsWith('/admin/categories')) {
@@ -63,8 +65,6 @@ const AppContent = () => {
       pageTitle = `Order Confirmed | ${shopName}`;
     } else if (path.startsWith('/products') || path.startsWith('/catalog')) {
       pageTitle = `Products Catalog | ${shopName}`;
-    } else if (path.startsWith('/showcase')) {
-      pageTitle = `Showcase | ${shopName}`;
     } else {
       pageTitle = `${shopName} | ${storeSettings?.tagline || 'Factory Direct Cracker Store'}`;
     }
@@ -93,8 +93,9 @@ const AppContent = () => {
       <div className="flex-1 relative z-10">
         <ErrorBoundary>
           <Routes>
-            {/* Customer Storefront Routes - Quick Order as Default */}
-            <Route path="/" element={<QuickOrderPage />} />
+            {/* Customer Storefront Routes - Pradhika Crackers Showcase as Front Page */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
             <Route path="/quick-order" element={<QuickOrderPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/catalog" element={<ProductsPage />} />

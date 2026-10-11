@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ListOrdered, LayoutGrid, ShoppingBag, FileText, Sparkles } from 'lucide-react';
+import { ListOrdered, LayoutGrid, ShoppingBag, FileText, Sparkles, Flame } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const MobileBottomNav = () => {
@@ -11,8 +11,9 @@ const MobileBottomNav = () => {
     Array.isArray(paths) ? paths.includes(location.pathname) : location.pathname === paths;
 
   const navItems = [
-    { to: '/',         paths: ['/', '/quick-order'], icon: ListOrdered, label: 'Order'   },
-    { to: '/products', paths: ['/products'],         icon: LayoutGrid,  label: 'Catalog' },
+    { to: '/',            paths: ['/', '/home', '/showcase'], icon: Flame,       label: 'Home'    },
+    { to: '/quick-order',  paths: ['/quick-order'],            icon: ListOrdered, label: 'Order'   },
+    { to: '/products',     paths: ['/products', '/catalog'],   icon: LayoutGrid,  label: 'Catalog' },
   ];
 
   return (
@@ -20,7 +21,7 @@ const MobileBottomNav = () => {
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-bottom-nav"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className={`grid grid-cols-3 items-stretch h-[58px]`}>
+      <div className={`grid grid-cols-4 items-stretch h-[58px]`}>
         {navItems.map((item) => {
           const active = isActive(item.paths);
           const Icon = item.icon;
